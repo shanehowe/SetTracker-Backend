@@ -1,5 +1,4 @@
 from auth.tokens import encode_jwt, decode_jwt
-import pytest
 
 
 def test_encode_jwt():
