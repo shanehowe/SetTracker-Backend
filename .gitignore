@@ -45,6 +45,8 @@ __pycache__/
 # pytest cache
 .pytest_cache/
 
+.mypy_cache/
+
 # Azurite artifacts
 __blobstorage__
 __queuestorage__
