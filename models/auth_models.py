@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from utils.string_utils import to_camel
+from utils import to_camel
 
 
 class AppleAuth(BaseModel):
