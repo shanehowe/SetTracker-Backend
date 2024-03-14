@@ -1,6 +1,6 @@
 import jwt
 import datetime
-from utils import add_days_to_date
+from app.utils import add_days_to_date
 
 
 def encode_jwt(payload: dict, secret: str, algorithm: str = "HS256") -> str:
