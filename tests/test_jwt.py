@@ -1,4 +1,4 @@
-from auth.tokens import encode_jwt, decode_jwt
+from app.auth.tokens import encode_jwt, decode_jwt
 
 
 def test_encode_jwt():
