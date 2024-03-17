@@ -54,3 +54,5 @@ __azurite_db*__.json
 
 # scripts
 *.sh
+
+.idea
