@@ -1,12 +1,17 @@
 from pydantic import BaseModel, EmailStr
 
 
-class UserInDB(BaseModel):
-    id: str
+class BaseUser(BaseModel):
     email: EmailStr
-    povider: str
-    first_name: str
-    last_name: str
+    provider: str
 
     class Config:
         allow_population_by_field_name = True
+
+
+class UserInDB(BaseUser):
+    id: str
+
+
+class UserInRequest(BaseUser):
+    token: str
