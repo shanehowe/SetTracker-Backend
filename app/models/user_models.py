@@ -12,6 +12,3 @@ class BaseUser(BaseModel):
 class UserInDB(BaseUser):
     id: str
 
-
-class UserInRequest(BaseUser):
-    token: str
