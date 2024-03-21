@@ -43,12 +43,14 @@ def decode_verify_apple_identity_token(token: str) -> dict | None:
     except jwt.exceptions.DecodeError:
         return None
 
-    matching_key = next((key for key in apple_keys if key["kid"] == headers["kid"]), None)
+    matching_key = next(
+        (key for key in apple_keys if key["kid"] == headers["kid"]), None
+    )
     if not matching_key:
         raise ValueError("Matching public key not found.")
-    
+
     public_key = RSAAlgorithm.from_jwk(matching_key)
-    
+
     # Now verify and decode the token
     try:
         decoded = jwt.decode(
@@ -56,7 +58,7 @@ def decode_verify_apple_identity_token(token: str) -> dict | None:
             key=public_key,  # type: ignore
             algorithms=["RS256"],
             audience="host.exp.Exponent",
-            issuer="https://appleid.apple.com"
+            issuer="https://appleid.apple.com",
         )
     except jwt.exceptions.InvalidAudienceError | jwt.exceptions.DecodeError:
         return None
