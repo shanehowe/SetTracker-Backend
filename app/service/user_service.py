@@ -1,7 +1,7 @@
 from app.data_access.user import UserDataAccess
 from app.models.user_models import UserInDB, BaseUser
 from app.models.auth_models import AuthRequest
-from app.auth.tokens import encode_jwt, decode_jwt, decode_and_verify_token
+from app.auth.tokens import encode_jwt, decode_and_verify_token
 from app.exceptions import UnsupportedProviderException
 
 from uuid import uuid4
@@ -12,6 +12,12 @@ class UserService:
         self.user_data_access = UserDataAccess()
 
     def authenticate(self, auth_data: AuthRequest) -> str | None:
+        """
+        Authenticate a user based on the auth data provided
+
+        :param auth_data: The authentication data
+        :return: The JWT token if the user is authenticated, None otherwise
+        """
         try:
             decoded_provider_token = decode_and_verify_token(auth_data.identity_token, auth_data.provider)
         except UnsupportedProviderException:
@@ -29,7 +35,7 @@ class UserService:
             user_to_create = BaseUser(email=email_from_token, provider=auth_data.provider)
             user_for_auth = self.create_user(user_to_create)
         
-        return encode_jwt(user_for_auth, secret="secret")
+        return encode_jwt(user_for_auth)
 
     def create_user(self, user: BaseUser):
         user_id = str(uuid4())

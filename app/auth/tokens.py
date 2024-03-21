@@ -2,19 +2,23 @@ import jwt
 from jwt.algorithms import RSAAlgorithm
 import datetime
 import requests
+import os
 from app.utils import add_days_to_date
 from app.exceptions import UnsupportedProviderException
 
 
-def encode_jwt(payload: dict, secret: str, algorithm: str = "HS256") -> str:
+SECRET = os.environ["JWT_SECRET"]
+
+
+def encode_jwt(payload: dict, algorithm: str = "HS256") -> str:
     today = datetime.datetime.now()
     twenty_four_hours = add_days_to_date(today, 1)
     updated_payload = {**payload, "exp": twenty_four_hours}
-    return jwt.encode(updated_payload, secret, algorithm=algorithm)
+    return jwt.encode(updated_payload, SECRET, algorithm=algorithm)
 
 
-def decode_jwt(token: str, secret: str, algorithm: str = "HS256") -> dict:
-    return jwt.decode(token, secret, algorithms=[algorithm])
+def decode_jwt(token: str, algorithm: str = "HS256") -> dict:
+    return jwt.decode(token, SECRET, algorithms=[algorithm])
 
 
 def decode_and_verify_token(token: str, provider: str) -> dict | None:
