@@ -9,7 +9,7 @@ class UserDataAccess(BaseDataAccess):
     def get_user_by_id(self, user_id: str):
         return self.container.read_item(item=user_id, partition_key=user_id)
 
-    def get_user_by_email(self, email: str):
+    def get_user_by_email(self, email: str) -> UserInDB | None:
         query = "SELECT * FROM users u WHERE u.email = @email"
         params = [dict(name="@email", value=email)]
         users = list(self.container.query_items(
@@ -17,11 +17,11 @@ class UserDataAccess(BaseDataAccess):
         ))
         if not users:
             return None
-        return users[0]
+        return UserInDB(**users[0])
 
-    def create_user(self, user: UserInDB) -> dict:
+    def create_user(self, user: UserInDB) -> UserInDB:
         created_user = self.container.create_item(body=user.model_dump())
-        return created_user
+        return UserInDB(**created_user)
 
     def update_user(self, user: UserInDB) -> dict:
         updated_user = self.container.upsert_item(body=user.model_dump())
