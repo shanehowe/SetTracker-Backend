@@ -7,3 +7,4 @@ azure-cosmos
 pydantic~=2.6.3
 pytest~=8.1.1
 PyJWT~=2.8.0
+fastapi
