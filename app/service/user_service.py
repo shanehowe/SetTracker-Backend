@@ -3,9 +3,9 @@ from jwt.exceptions import PyJWTError
 
 from app.auth.tokens import decode_and_verify_token, encode_jwt
 from app.data_access.user import UserDataAccess
-from app.exceptions import UnsupportedProviderException, InvalidAuthCredentialsException
+from app.exceptions import UnsupportedProviderException, AuthenticationException
 from app.models.auth_models import AuthRequest
-from app.models.user_models import BaseUser, UserInDB, UserInResponse
+from app.models.user_models import BaseUser, UserInDB
 
 
 class UserService:
@@ -18,20 +18,20 @@ class UserService:
 
         :param auth_data: The authentication data
         :return: The authenticated user or None
+        :raises AuthenticationException: If the authentication fails
         """
         try:
             decoded_provider_token = decode_and_verify_token(
                 auth_data.token, auth_data.provider
             )
-        except UnsupportedProviderException | ValueError:
-            return None
-
-        if decoded_provider_token is None:
-            return None
+        except UnsupportedProviderException:
+            raise AuthenticationException("oAuth provider not supported")
+        except ValueError | PyJWTError:
+            raise AuthenticationException("Invalid token data")
 
         email_from_token = decoded_provider_token.get("email")
         if email_from_token is None:
-            raise InvalidAuthCredentialsException("Invalid token data")
+            raise AuthenticationException("Invalid token data")
 
         user_for_auth = self.user_data_access.get_user_by_email(email_from_token)
         if user_for_auth is None:
@@ -39,15 +39,10 @@ class UserService:
                 email=email_from_token, provider=auth_data.provider
             )
             user_for_auth = self.create_user(user_to_create)
-
-        try:
-            jwt_token = encode_jwt({"id": user_for_auth.id, "email": user_for_auth.email})
-        except PyJWTError:
-            return None
         
         return {
             "id": user_for_auth.id,
-            "token": jwt_token
+            "token": encode_jwt({"id": user_for_auth.id, "email": user_for_auth.email})
         }
 
     def create_user(self, user: BaseUser):
