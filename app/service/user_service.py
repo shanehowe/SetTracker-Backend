@@ -27,7 +27,7 @@ class UserService:
         except UnsupportedProviderException:
             raise AuthenticationException("oAuth provider not supported")
         except ValueError | PyJWTError:
-            raise AuthenticationException("Invalid token data")
+            raise AuthenticationException("Unable to decode token")
 
         email_from_token = decoded_provider_token.get("email")
         if email_from_token is None:
