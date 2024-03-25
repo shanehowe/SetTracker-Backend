@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException, status
 from app.service.user_service import UserService
 from app.models.auth_models import AuthRequest
 from app.models.user_models import UserInResponse
-from app.exceptions import InvalidAuthCredentialsException
+from app.exceptions import AuthenticationException
 
 
 auth_router = APIRouter(prefix="auth", tags=["Authentication"])
@@ -18,8 +18,7 @@ def sign_in(
 ) -> UserInResponse:
     try:
         authenticated_user = user_service.authenticate(auth_data)
-    except InvalidAuthCredentialsException as e:
+    except AuthenticationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    if authenticated_user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authenticated")
-    return UserInResponse(**authenticated_user)
+    else:
+        return UserInResponse(**authenticated_user)
