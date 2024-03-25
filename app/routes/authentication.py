@@ -21,5 +21,5 @@ def sign_in(
     except InvalidAuthCredentialsException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     if authenticated_user is None:
-        raise HTTPException(status_code=401, detail="User not authenticated")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authenticated")
     return UserInResponse(**authenticated_user)
