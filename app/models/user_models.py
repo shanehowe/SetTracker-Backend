@@ -6,9 +6,13 @@ class BaseUser(BaseModel):
     provider: str
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class UserInDB(BaseUser):
     id: str
 
+
+class UserInResponse(BaseModel):
+    id: str
+    token: str
