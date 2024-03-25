@@ -6,7 +6,6 @@ import os
 from app.utils import add_days_to_date
 from app.exceptions import UnsupportedProviderException
 
-
 SECRET = os.environ["JWT_SECRET"]
 
 
@@ -21,7 +20,19 @@ def decode_jwt(token: str, algorithm: str = "HS256") -> dict:
     return jwt.decode(token, SECRET, algorithms=[algorithm])
 
 
-def decode_and_verify_token(token: str, provider: str) -> dict | None:
+def decode_and_verify_token(token: str, provider: str) -> dict:
+    """
+    Decode and verify an identity token based on the provider.
+
+    Note this function calls the appropriate
+    decode function based on the provider. Exceptions by this function and functions called within
+    are raised if the provider is not supported or the token is invalid and should be caught by the caller.
+
+    :param token: The identity token
+    :param provider: The provider of the token
+    :return: The decoded token
+    :raises UnsupportedProviderException: If the provider is not supported
+    """
     match provider:
         case "apple":
             return decode_verify_apple_identity_token(token)
@@ -35,13 +46,21 @@ def fetch_apple_public_keys():
     return response.json()["keys"]
 
 
-def decode_verify_apple_identity_token(token: str) -> dict | None:
+def decode_verify_apple_identity_token(token: str) -> dict:
+    """
+    Decode and verify an Apple identity token
+
+    :param token: The Apple identity token
+    :return: The decoded token
+    :raises ValueError: If the public key is not found
+    :raises jwt.exceptions.InvalidTokenError: If the token is invalid
+    """
     apple_keys = fetch_apple_public_keys()
 
     try:
         headers = jwt.get_unverified_header(token)
     except jwt.exceptions.DecodeError:
-        return None
+        raise jwt.exceptions.InvalidTokenError()
 
     matching_key = next(
         (key for key in apple_keys if key["kid"] == headers["kid"]), None
@@ -51,15 +70,10 @@ def decode_verify_apple_identity_token(token: str) -> dict | None:
 
     public_key = RSAAlgorithm.from_jwk(matching_key)
 
-    # Now verify and decode the token
-    try:
-        decoded = jwt.decode(
+    return jwt.decode(
             token,
             key=public_key,  # type: ignore
             algorithms=["RS256"],
             audience="host.exp.Exponent",
             issuer="https://appleid.apple.com",
         )
-    except jwt.exceptions.InvalidAudienceError | jwt.exceptions.DecodeError:
-        return None
-    return decoded
