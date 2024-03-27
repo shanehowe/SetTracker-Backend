@@ -4,7 +4,6 @@ from app.service.user_service import UserService
 from app.models.user_models import BaseUser, UserInDB
 from app.models.auth_models import AuthRequest
 from app.exceptions import AuthenticationException
-import app.auth.tokens
 
 
 @pytest.fixture
