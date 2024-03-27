@@ -35,12 +35,6 @@ def test_create_user(user_service, mock_user_data_access):
 
 
 def test_authenticate_raises_exception_when_given_invalid_provider(user_service, mock_user_data_access, monkeypatch):
-    monkeypatch.setattr(
-        app.auth.tokens,
-        "decode_and_verify_token",
-        MagicMock(side_effect=app.auth.tokens.UnsupportedProviderException)
-    )
-
     with pytest.raises(AuthenticationException, match="oAuth provider not supported"):
         user_service.authenticate(AuthRequest(token="token", provider="invalid_provider"))
     assert not mock_user_data_access.get_user_by_email.called
