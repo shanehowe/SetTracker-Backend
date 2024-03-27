@@ -1,10 +1,10 @@
-from .cosmos_client_singleton import CosmosDBClientSingleton
+from app.data_access.cosmos_client_singleton import CosmosDBClientSingleton
 
 
 class BaseDataAccess:
     def __init__(self, container_name: str) -> None:
         """
-        :param container_name: The name of the container e.g users
+        :param container_name: The name of the container e.g. users
         """
         self.db_name = "set-tracker-db"
         self.container_name = container_name
