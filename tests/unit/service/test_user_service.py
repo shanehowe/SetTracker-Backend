@@ -37,3 +37,13 @@ def test_authenticate_raises_exception_when_given_invalid_provider(user_service,
     with pytest.raises(AuthenticationException, match="oAuth provider not supported"):
         user_service.authenticate(AuthRequest(token="token", provider="invalid_provider"))
     assert not mock_user_data_access.get_user_by_email.called
+
+
+def test_authenticate_raises_exception_when_given_invalid_token(user_service, mock_user_data_access, monkeypatch):
+    mock_decode_and_verify_token = MagicMock()
+    mock_decode_and_verify_token.side_effect = ValueError("Invalid token")
+    monkeypatch.setattr("app.service.user_service.decode_and_verify_token", mock_decode_and_verify_token)
+
+    with pytest.raises(AuthenticationException, match="Unable to decode token"):
+        user_service.authenticate(AuthRequest(token="token", provider="apple"))
+    assert not mock_user_data_access.get_user_by_email.called
