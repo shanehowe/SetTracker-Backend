@@ -49,3 +49,7 @@ class UserService:
         user_id = str(uuid4())
         user_for_creation = UserInDB(**user.model_dump(), id=user_id)
         return self.user_data_access.create_user(user_for_creation)
+
+
+def get_user_service() -> UserService:
+    return UserService()
