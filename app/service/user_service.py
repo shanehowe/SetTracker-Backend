@@ -12,7 +12,7 @@ class UserService:
     def __init__(self, user_data_access=UserDataAccess()) -> None:
         self.user_data_access = user_data_access
 
-    def authenticate(self, auth_data: AuthRequest) -> dict[str, str] | None:
+    def authenticate(self, auth_data: AuthRequest) -> dict[str, str]:
         """
         Authenticate a user based on the auth data provided
 
@@ -26,7 +26,7 @@ class UserService:
             )
         except UnsupportedProviderException:
             raise AuthenticationException("oAuth provider not supported")
-        except ValueError | PyJWTError:
+        except (ValueError, PyJWTError) as e:
             raise AuthenticationException("Unable to decode token")
 
         email_from_token = decoded_provider_token.get("email")
