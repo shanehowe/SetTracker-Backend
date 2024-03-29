@@ -1,20 +1,20 @@
 from fastapi.routing import APIRouter
 from fastapi import Depends, HTTPException, status
 
-from app.service.user_service import UserService
+from app.service.user_service import UserService, get_user_service
 from app.models.auth_models import AuthRequest
 from app.models.user_models import UserInResponse
 from app.exceptions import AuthenticationException
 
 
-auth_router = APIRouter(prefix="auth", tags=["Authentication"])
+auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @auth_router.post(
     "/signin", status_code=status.HTTP_200_OK, response_model=UserInResponse
 )
 def sign_in(
-    auth_data: AuthRequest, user_service: UserService = Depends(UserService)
+    auth_data: AuthRequest, user_service: UserService = Depends(get_user_service)
 ) -> UserInResponse:
     try:
         authenticated_user = user_service.authenticate(auth_data)
