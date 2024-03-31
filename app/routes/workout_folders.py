@@ -5,6 +5,7 @@ from app.service.workout_folder_service import (
     WorkoutFolderService,
 )
 from app.dependencies import get_current_user
+from app.exceptions import UnauthorizedAccessException
 from app.models.workout_folder_models import WorkoutFolderInRequest
 
 
@@ -24,6 +25,28 @@ def get_users_folders(
             detail="Invalid token payload", status_code=status.HTTP_400_BAD_REQUEST
         )
     return workout_folder_service.get_users_workout_folders(user_id)
+
+
+@workout_folder_router.get("/{folder_id}")
+def get_folder_by_id(
+    folder_id: str,
+    workout_folder_service: Annotated[
+        WorkoutFolderService, Depends(get_workout_folder_service)
+    ],
+    decoded_token: dict = Depends(get_current_user),
+):
+    try:
+        folder = workout_folder_service.get_folder_by_id(
+            folder_id, decoded_token.get("id", "")
+        )
+    except UnauthorizedAccessException as e:
+        raise HTTPException(detail=str(e), status_code=status.HTTP_401_UNAUTHORIZED)
+    if folder is None:
+        raise HTTPException(
+            detail="Folder with requested id does not exist",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    return folder
 
 
 @workout_folder_router.post("/")
