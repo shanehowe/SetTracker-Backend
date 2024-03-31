@@ -6,6 +6,10 @@ class WorkoutFolderDataAccess(BaseDataAccess):
     def __init__(self):
         super().__init__(container_name="workout-folders")
 
+    def get_folder_by_id(self, folder_id: str) -> WorkoutFolderInDB:
+        folder = self.container.read_item(item=folder_id, partition_key=folder_id)
+        return WorkoutFolderInDB(**folder)
+
     def get_users_workout_folders(self, user_id: str) -> list[WorkoutFolderInDB]:
         query = "SELECT * FROM workout_folders wf WHERE wf.user_id = @user_id"
         params = [dict(name="@user_id", value=user_id)]
