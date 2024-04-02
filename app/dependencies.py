@@ -31,4 +31,8 @@ async def get_current_user(token: str = Depends(extract_token)) -> dict:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Could not decode token"
         )
+    if payload.get("id") is None or payload.get("email") is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token payload"
+        )
     return payload
