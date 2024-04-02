@@ -45,3 +45,15 @@ def test_get_workout_folder_by_id_raises_unauthorized_exception(
     )
     with pytest.raises(UnauthorizedAccessException):
         workout_folder_service.get_folder_by_id("123", "456")
+
+
+def test_get_users_workout_folders(mock_workout_folder_data_access, workout_folder_service):
+    mock_workout_folder_data_access.get_users_workout_folders.return_value = [
+        WorkoutFolderInDB(id="123", user_id="123", name="test folder", exercises=[])
+    ]
+    folders = workout_folder_service.get_users_workout_folders("123")
+    assert len(folders) == 1
+    assert folders[0].id == "123"
+    assert folders[0].user_id == "123"
+    assert folders[0].name == "test folder"
+    assert folders[0].exercises == []
