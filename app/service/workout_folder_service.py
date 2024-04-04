@@ -1,6 +1,6 @@
 from uuid import uuid4
 from app.data_access.workout_folder import WorkoutFolderDataAccess
-from app.models.workout_folder_models import WorkoutFolderInDB, WorkoutFolderInRequest
+from app.models.workout_folder_models import WorkoutFolderInDB, WorkoutFolderInRequest, WorkoutFolderInUpdate
 from app.exceptions import UnauthorizedAccessException
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
@@ -34,6 +34,24 @@ class WorkoutFolderService:
         return self.workout_folder_data_access.create_workout_folder(
             folder_for_creation
         )
+
+    def update_workout_folder(self, folder_id: str, data_to_update: WorkoutFolderInUpdate, user_id: str):
+        if data_to_update.name is None and data_to_update.exercises is None:
+            raise ValueError("Folder name or exercises must be provided to update folder")
+        try:
+            retrieved_folder = self.workout_folder_data_access.get_folder_by_id(folder_id)
+        except CosmosResourceNotFoundError:
+            return None
+
+        if retrieved_folder.user_id != user_id:
+            raise UnauthorizedAccessException("This folder does not belong to the user")
+
+        if data_to_update.name is not None:
+            retrieved_folder.name = data_to_update.name
+        if data_to_update.exercises is not None:
+            retrieved_folder.exercises = data_to_update.exercises
+
+        return self.workout_folder_data_access.update_workout_folder(retrieved_folder)
 
 
 def get_workout_folder_service() -> WorkoutFolderService:
