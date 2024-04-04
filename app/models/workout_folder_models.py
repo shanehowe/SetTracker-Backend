@@ -17,3 +17,8 @@ class WorkoutFolderInDB(BaseWorkoutFolder):
 class WorkoutFolderInRequest(BaseWorkoutFolder):
     name: str
     exercises: Optional[list[str]] = None
+
+
+class WorkoutFolderInUpdate(BaseWorkoutFolder):
+    name: Optional[str] = None
+    exercises: Optional[list[str]] = None
