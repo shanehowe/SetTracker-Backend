@@ -2,7 +2,7 @@ from uuid import uuid4
 from app.data_access.workout_folder import WorkoutFolderDataAccess
 from app.models.workout_folder_models import WorkoutFolderInDB, WorkoutFolderInRequest, WorkoutFolderInUpdate
 from app.exceptions import UnauthorizedAccessException
-from azure.cosmos.exceptions import CosmosResourceNotFoundError
+from azure.cosmos.exceptions import CosmosResourceNotFoundError, CosmosHttpResponseError
 
 
 class WorkoutFolderService:
@@ -52,6 +52,23 @@ class WorkoutFolderService:
             retrieved_folder.exercises = data_to_update.exercises
 
         return self.workout_folder_data_access.update_workout_folder(retrieved_folder)
+
+    def delete_workout_folder(self, folder_id: str, user_id: str):
+        """
+        :param folder_id: The id of the folder that is to be deleted
+        :param user_id: The id of the user that is requesting the folder to be deleted
+        :returns: True if operation was successful, False if not
+        :raises ValueError: When the id does not belong to an existing folder
+        :raises UnauthorizedAccessException: When the user does not own the folder
+        """
+        folder_to_delete = self.get_folder_by_id(folder_id, user_id)
+        if folder_to_delete is None:
+            raise ValueError("Folder with requested id does not exist")
+        try:
+            self.workout_folder_data_access.delete_workout_folder(folder_id)
+            return True
+        except CosmosHttpResponseError:
+            return False
 
 
 def get_workout_folder_service() -> WorkoutFolderService:
