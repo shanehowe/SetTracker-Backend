@@ -48,7 +48,7 @@ def get_folder_by_id(
     return folder
 
 
-@workout_folder_router.post("/")
+@workout_folder_router.post("/", status_code=status.HTTP_201_CREATED)
 def create_workout_folder(
     folder_to_create: WorkoutFolderInRequest,
     workout_folder_service: Annotated[
@@ -84,3 +84,22 @@ def update_workout_folder(
             status_code=status.HTTP_400_BAD_REQUEST,
         )
     return updated_folder
+
+
+@workout_folder_router.delete("/{folder_id}", status_code=status.HTTP_200_OK)
+def delete_workout_folder(
+    folder_id: str,
+    workout_folder_service: Annotated[
+        WorkoutFolderService, Depends(get_workout_folder_service)
+    ],
+    decoded_token: dict = Depends(get_current_user),
+):
+    try:
+        is_success = workout_folder_service.delete_workout_folder(folder_id, decoded_token.get("id"))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except UnauthorizedAccessException as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    return {
+        "detail": is_success
+    }
