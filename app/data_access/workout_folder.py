@@ -29,3 +29,6 @@ class WorkoutFolderDataAccess(BaseDataAccess):
     def update_workout_folder(self, workout_folder: WorkoutFolderInDB) -> WorkoutFolderInDB:
         updated_workout_folder = self.container.upsert_item(body=workout_folder.model_dump())
         return WorkoutFolderInDB(**updated_workout_folder)
+
+    def delete_workout_folder(self, folder_id: str):
+        self.container.delete_item(folder_id, partition_key=folder_id)
