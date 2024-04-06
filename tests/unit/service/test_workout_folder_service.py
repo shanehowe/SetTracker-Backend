@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock
-from azure.cosmos.exceptions import CosmosResourceNotFoundError
+from azure.cosmos.exceptions import CosmosResourceNotFoundError, CosmosHttpResponseError
 from app.exceptions import UnauthorizedAccessException
 from app.service.workout_folder_service import WorkoutFolderService
 from app.models.workout_folder_models import (
@@ -109,8 +109,56 @@ def test_update_workout_folder_returns_none_when_resource_doesnt_exist(
         CosmosResourceNotFoundError()
     )
 
-    assert workout_folder_service.update_workout_folder(
-        "123",
-        WorkoutFolderInUpdate(name="updated folder", exercises=["exercise1"]),
-        "123",
-    ) is None
+    assert (
+        workout_folder_service.update_workout_folder(
+            "123",
+            WorkoutFolderInUpdate(name="updated folder", exercises=["exercise1"]),
+            "123",
+        )
+        is None
+    )
+
+
+def test_delete_folder_returns_true_when_folder_exists(
+    workout_folder_service, mock_workout_folder_data_access
+):
+    mock_workout_folder_data_access.get_folder_by_id.return_value = WorkoutFolderInDB(
+        id="1", user_id="1", name="folder", exercises=[]
+    )
+    result = workout_folder_service.delete_workout_folder("1", "1")
+    assert result is True
+    mock_workout_folder_data_access.get_folder_by_id.assert_called_with("1")
+
+
+def test_delete_folder_raises_value_error_when_folder_doesnt_exist(
+    workout_folder_service, mock_workout_folder_data_access
+):
+    mock_workout_folder_data_access.get_folder_by_id.side_effect = (
+        CosmosResourceNotFoundError()
+    )
+    with pytest.raises(ValueError):
+        workout_folder_service.delete_workout_folder("1", "1")
+
+
+def test_delete_folder_returns_false_when_cosmos_errors(
+    workout_folder_service, mock_workout_folder_data_access
+):
+    mock_workout_folder_data_access.get_folder_by_id.return_value = WorkoutFolderInDB(
+        id="1", user_id="1", name="folder", exercises=[]
+    )
+    mock_workout_folder_data_access.delete_workout_folder.side_effect = (
+        CosmosHttpResponseError()
+    )
+
+    assert workout_folder_service.delete_workout_folder("1", "1") is False
+
+
+def test_delete_folder_raises_unauthorized_access_exception_when_folder_does_not_belong_to_user(
+    workout_folder_service, mock_workout_folder_data_access
+):
+    mock_workout_folder_data_access.get_folder_by_id.return_value = WorkoutFolderInDB(
+        id="1", user_id="2", name="folder", exercises=[]
+    )
+
+    with pytest.raises(UnauthorizedAccessException):
+        workout_folder_service.delete_workout_folder("1", "1")
