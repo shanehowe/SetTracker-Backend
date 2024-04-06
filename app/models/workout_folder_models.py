@@ -1,10 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
 
 class BaseWorkoutFolder(BaseModel):
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class WorkoutFolderInDB(BaseWorkoutFolder):

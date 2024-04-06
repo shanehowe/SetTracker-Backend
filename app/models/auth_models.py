@@ -1,9 +1,8 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict
 
 
 class AuthRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     token: str
     provider: str
-
-    class Config:
-        populate_by_name = True

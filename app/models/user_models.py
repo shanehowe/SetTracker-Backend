@@ -1,12 +1,11 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 
 
 class BaseUser(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     email: EmailStr
     provider: str
-
-    class Config:
-        populate_by_name = True
 
 
 class UserInDB(BaseUser):
