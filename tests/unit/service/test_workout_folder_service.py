@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import MagicMock
 from azure.cosmos.exceptions import CosmosResourceNotFoundError, CosmosHttpResponseError
 from app.exceptions import UnauthorizedAccessException
+from app.models.exercises_models import ExerciseInDB
 from app.service.workout_folder_service import WorkoutFolderService
 from app.models.workout_folder_models import (
     WorkoutFolderInDB,
@@ -74,18 +75,34 @@ def test_update_workout_folder(mock_workout_folder_data_access, workout_folder_s
     )
     mock_workout_folder_data_access.update_workout_folder.return_value = (
         WorkoutFolderInDB(
-            id="123", user_id="123", name="updated folder", exercises=["exercise1"]
+            id="123",
+            user_id="123",
+            name="updated folder",
+            exercises=[ExerciseInDB(id="1", name="test", body_parts=[], creator="123")],
         )
     )
     updated_folder = workout_folder_service.update_workout_folder(
         "123",
-        WorkoutFolderInUpdate(name="updated folder", exercises=["exercise1"]),
+        WorkoutFolderInUpdate(
+            name="updated folder",
+            exercises=[ExerciseInDB(id="1", name="test", body_parts=[], creator="123")],
+        ),
         "123",
     )
     assert updated_folder.id == "123"
     assert updated_folder.user_id == "123"
     assert updated_folder.name == "updated folder"
-    assert updated_folder.exercises == ["exercise1"]
+    assert updated_folder.exercises == [
+        ExerciseInDB(id="1", name="test", body_parts=[], creator="123")
+    ]
+    mock_workout_folder_data_access.update_workout_folder.assert_called_with(
+        WorkoutFolderInDB(
+            id="123",
+            user_id="123",
+            name="updated folder",
+            exercises=[ExerciseInDB(id="1", name="test", body_parts=[], creator="123")],
+        )
+    )
 
 
 def test_update_workout_folder_raises_unauthorized_exception(
@@ -97,7 +114,7 @@ def test_update_workout_folder_raises_unauthorized_exception(
     with pytest.raises(UnauthorizedAccessException):
         workout_folder_service.update_workout_folder(
             "123",
-            WorkoutFolderInUpdate(name="updated folder", exercises=["exercise1"]),
+            WorkoutFolderInUpdate(name="updated folder", exercises=[]),
             "456",
         )
 
@@ -112,7 +129,12 @@ def test_update_workout_folder_returns_none_when_resource_doesnt_exist(
     assert (
         workout_folder_service.update_workout_folder(
             "123",
-            WorkoutFolderInUpdate(name="updated folder", exercises=["exercise1"]),
+            WorkoutFolderInUpdate(
+                name="updated folder",
+                exercises=[
+                    ExerciseInDB(id="1", name="test", body_parts=[], creator="123")
+                ],
+            ),
             "123",
         )
         is None
