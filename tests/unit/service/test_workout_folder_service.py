@@ -117,6 +117,7 @@ def test_update_workout_folder_raises_unauthorized_exception(
             WorkoutFolderInUpdate(name="updated folder", exercises=[]),
             "456",
         )
+    assert not mock_workout_folder_data_access.update_workout_folder.called
 
 
 def test_update_workout_folder_returns_none_when_resource_doesnt_exist(
@@ -139,6 +140,7 @@ def test_update_workout_folder_returns_none_when_resource_doesnt_exist(
         )
         is None
     )
+    assert not mock_workout_folder_data_access.update_workout_folder.called
 
 
 def test_delete_folder_returns_true_when_folder_exists(
@@ -160,6 +162,7 @@ def test_delete_folder_raises_value_error_when_folder_doesnt_exist(
     )
     with pytest.raises(ValueError):
         workout_folder_service.delete_workout_folder("1", "1")
+    assert not mock_workout_folder_data_access.delete_workout_folder.called
 
 
 def test_delete_folder_returns_false_when_cosmos_errors(
@@ -173,6 +176,7 @@ def test_delete_folder_returns_false_when_cosmos_errors(
     )
 
     assert workout_folder_service.delete_workout_folder("1", "1") is False
+    mock_workout_folder_data_access.delete_workout_folder.assert_called_once_with("1")
 
 
 def test_delete_folder_raises_unauthorized_access_exception_when_folder_does_not_belong_to_user(
