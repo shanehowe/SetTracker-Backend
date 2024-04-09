@@ -1,14 +1,17 @@
-import pytest
 from unittest.mock import MagicMock
-from app.service.user_service import UserService
-from app.models.user_models import BaseUser, UserInDB
-from app.models.auth_models import AuthRequest
+
+import pytest
+
+from app.data_access.user import UserDataAccess
 from app.exceptions import AuthenticationException
+from app.models.auth_models import AuthRequest
+from app.models.user_models import BaseUser, UserInDB
+from app.service.user_service import UserService
 
 
 @pytest.fixture
 def mock_user_data_access():
-    return MagicMock()
+    return MagicMock(spec=UserDataAccess)
 
 
 @pytest.fixture
@@ -17,13 +20,13 @@ def user_service(mock_user_data_access):
 
 
 @pytest.fixture
-def mock_decode_and_verify_token(monkeypatch):
+def mock_decode_and_verify_token():
     return MagicMock()
 
 
 def test_create_user(user_service, mock_user_data_access):
-    mock_user_data_access.create_user.return_value = UserInDB(
-        id="123", email="example@email.com", provider="apple"
+    mock_user_data_access.create_user = MagicMock(
+        return_value=UserInDB(id="123", email="example@email.com", provider="apple")
     )
     user_for_creation = BaseUser(email="example@email.com", provider="apple")
     # Call the service method
@@ -34,11 +37,13 @@ def test_create_user(user_service, mock_user_data_access):
     args, _ = mock_user_data_access.create_user.call_args
     assert args[0].email == "example@email.com"
     assert args[0].provider == "apple"
+    assert mock_user_data_access.create_user.called_once
 
 
 def test_authenticate_raises_exception_when_given_invalid_provider(
     user_service, mock_user_data_access
 ):
+    mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
     with pytest.raises(AuthenticationException, match="oAuth provider not supported"):
         user_service.authenticate(
             AuthRequest(token="token", provider="invalid_provider")
@@ -62,6 +67,7 @@ def test_authenticate_raises_exception_when_given_invalid_token(
 def test_authenticate_raises_exception_when_token_data_doesnt_contain_email_field(
     monkeypatch, user_service, mock_user_data_access, mock_decode_and_verify_token
 ):
+    mock_user_data_access.get_user_by_email = MagicMock()
     mock_decode_and_verify_token.return_value = {"not an email field": 42}
     monkeypatch.setattr(
         "app.service.user_service.decode_and_verify_token", mock_decode_and_verify_token
@@ -81,9 +87,11 @@ def test_authenticate_calls_create_user_when_user_for_auth_doesnt_exist(
         "app.service.user_service.decode_and_verify_token", mock_decode_and_verify_token
     )
     # User doesnt exist
-    mock_user_data_access.get_user_by_email.return_value = None
-    mock_user_data_access.create_user.return_value = UserInDB(
-        id="132", email="some_email@example.com", provider="apple"
+    mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
+    mock_user_data_access.create_user = MagicMock(
+        return_value=UserInDB(
+            id="132", email="some_email@example.com", provider="apple"
+        )
     )
     auth_request = AuthRequest(token="token", provider="apple")
 
@@ -100,8 +108,10 @@ def test_authenticate_returns_dict_with_id_and_token_field(
         "app.service.user_service.decode_and_verify_token", mock_decode_and_verify_token
     )
     # User doesnt exist
-    mock_user_data_access.get_user_by_email.return_value = UserInDB(
-        id="132", email="some_email@example.com", provider="apple"
+    mock_user_data_access.get_user_by_email = MagicMock(
+        return_value=UserInDB(
+            id="132", email="some_email@example.com", provider="apple"
+        )
     )
     auth_request = AuthRequest(token="token", provider="apple")
 
@@ -109,3 +119,4 @@ def test_authenticate_returns_dict_with_id_and_token_field(
     assert isinstance(result, dict)
     assert result.get("id") is not None
     assert result.get("token") is not None
+    assert mock_user_data_access.get_user_by_email.called_once
