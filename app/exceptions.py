@@ -10,3 +10,7 @@ class AuthenticationException(Exception):
 class UnauthorizedAccessException(Exception):
     def __init__(self, message="Unauthorized access"):
         super().__init__(message)
+
+
+class ExerciseAlreadyExistsException(Exception):
+    """Raised when attempting to create a custom exercise but it already exists"""
