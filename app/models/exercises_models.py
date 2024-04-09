@@ -13,5 +13,4 @@ class ExerciseInDB(BaseExercise):
 
 
 class ExerciseInCreate(BaseExercise):
-    id: str
     name: str
