@@ -1,10 +1,12 @@
-import jwt
-from jwt.algorithms import RSAAlgorithm
 import datetime
-import requests
 import os
-from app.utils import add_days_to_date
+
+import jwt
+import requests
+from jwt.algorithms import RSAAlgorithm
+
 from app.exceptions import UnsupportedProviderException
+from app.utils import add_days_to_date
 
 SECRET = os.environ["JWT_SECRET"]
 
@@ -71,9 +73,9 @@ def decode_verify_apple_identity_token(token: str) -> dict:
     public_key = RSAAlgorithm.from_jwk(matching_key)
 
     return jwt.decode(
-            token,
-            key=public_key,  # type: ignore
-            algorithms=["RS256"],
-            audience="host.exp.Exponent",
-            issuer="https://appleid.apple.com",
-        )
+        token,
+        key=public_key,  # type: ignore
+        algorithms=["RS256"],
+        audience="host.exp.Exponent",
+        issuer="https://appleid.apple.com",
+    )
