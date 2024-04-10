@@ -1,5 +1,6 @@
-from fastapi import Request, HTTPException, status, Depends
-from jwt.exceptions import PyJWTError, ExpiredSignatureError
+from fastapi import Depends, HTTPException, Request, status
+from jwt.exceptions import ExpiredSignatureError, PyJWTError
+
 from app.auth.tokens import decode_jwt
 
 

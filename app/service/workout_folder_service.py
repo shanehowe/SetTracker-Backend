@@ -1,8 +1,14 @@
 from uuid import uuid4
+
+from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
+
 from app.data_access.workout_folder import WorkoutFolderDataAccess
-from app.models.workout_folder_models import WorkoutFolderInDB, WorkoutFolderInRequest, WorkoutFolderInUpdate
 from app.exceptions import UnauthorizedAccessException
-from azure.cosmos.exceptions import CosmosResourceNotFoundError, CosmosHttpResponseError
+from app.models.workout_folder_models import (
+    WorkoutFolderInDB,
+    WorkoutFolderInRequest,
+    WorkoutFolderInUpdate,
+)
 
 
 class WorkoutFolderService:
@@ -14,7 +20,9 @@ class WorkoutFolderService:
 
     def get_folder_by_id(self, folder_id: str, user_requesting_folder: str):
         try:
-            retrieved_folder = self.workout_folder_data_access.get_folder_by_id(folder_id)
+            retrieved_folder = self.workout_folder_data_access.get_folder_by_id(
+                folder_id
+            )
         except CosmosResourceNotFoundError:
             return None
         if retrieved_folder.user_id != user_requesting_folder:
@@ -35,11 +43,17 @@ class WorkoutFolderService:
             folder_for_creation
         )
 
-    def update_workout_folder(self, folder_id: str, data_to_update: WorkoutFolderInUpdate, user_id: str):
+    def update_workout_folder(
+        self, folder_id: str, data_to_update: WorkoutFolderInUpdate, user_id: str
+    ):
         if data_to_update.name is None and data_to_update.exercises is None:
-            raise ValueError("Folder name or exercises must be provided to update folder")
+            raise ValueError(
+                "Folder name or exercises must be provided to update folder"
+            )
         try:
-            retrieved_folder = self.workout_folder_data_access.get_folder_by_id(folder_id)
+            retrieved_folder = self.workout_folder_data_access.get_folder_by_id(
+                folder_id
+            )
         except CosmosResourceNotFoundError:
             return None
 
