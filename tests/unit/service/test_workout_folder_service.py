@@ -5,7 +5,11 @@ from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFo
 
 from app.exceptions import UnauthorizedAccessException
 from app.models.exercises_models import ExerciseInDB
-from app.models.workout_folder_models import WorkoutFolderInDB, WorkoutFolderInUpdate
+from app.models.workout_folder_models import (
+    WorkoutFolderInDB,
+    WorkoutFolderInRequest,
+    WorkoutFolderInUpdate,
+)
 from app.service.workout_folder_service import WorkoutFolderService
 
 
@@ -73,6 +77,23 @@ def test_get_users_workout_folders(
     assert folders[0].exercises == []
 
 
+def test_create_workout_folder_adds_empty_list_when_exercises_field_is_none(
+    mock_workout_folder_data_access, workout_folder_service
+):
+    mock_workout_folder_data_access.create_workout_folder = MagicMock(
+        return_value=WorkoutFolderInDB(id="1", name="name", user_id="1", exercises=[])
+    )
+    workout_folder_service.create_workout_folder(
+        WorkoutFolderInRequest(name="name", exercises=None), "1"
+    )
+    created_folder = (
+        mock_workout_folder_data_access.create_workout_folder.call_args.args[0]
+    )
+    assert isinstance(created_folder, WorkoutFolderInDB)
+    assert isinstance(created_folder.exercises, list)
+    assert len(created_folder.exercises) == 0
+
+
 def test_update_workout_folder(mock_workout_folder_data_access, workout_folder_service):
     mock_workout_folder_data_access.get_folder_by_id.return_value = WorkoutFolderInDB(
         id="123", user_id="123", name="test folder", exercises=[]
@@ -111,6 +132,14 @@ def test_update_workout_folder(mock_workout_folder_data_access, workout_folder_s
             exercises=[ExerciseInDB(id="1", name="test", body_parts=[], creator="123")],
         )
     )
+
+
+def test_update_folder_raises_value_error_when_name_and_exercises_are_none(
+    workout_folder_service,
+):
+    data_to_update = WorkoutFolderInUpdate(name=None, exercises=None)
+    with pytest.raises(ValueError):
+        workout_folder_service.update_workout_folder("1", data_to_update, "123")
 
 
 def test_update_workout_folder_raises_unauthorized_exception(
