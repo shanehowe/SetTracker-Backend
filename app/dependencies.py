@@ -4,7 +4,7 @@ from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from app.auth.tokens import decode_jwt
 
 
-async def extract_token(request: Request) -> str:
+def extract_token(request: Request) -> str:
     token = request.headers.get("Authorization")
 
     if not token:
@@ -21,7 +21,7 @@ async def extract_token(request: Request) -> str:
     return token[7:]  # Strip away "Bearer "
 
 
-async def get_current_user(token: str = Depends(extract_token)) -> dict:
+def get_current_user(token: str = Depends(extract_token)) -> dict:
     try:
         payload = decode_jwt(token)
     except ExpiredSignatureError:
