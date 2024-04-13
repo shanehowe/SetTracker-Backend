@@ -32,3 +32,9 @@ def test_extract_token_raises_400_exception_when_wrong_auth_scheme(
     with pytest.raises(HTTPException) as exc_info:
         extract_token(request)
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def test_extract_token_returns_token_when_valid_auth_scheme(mock_request):
+    request = mock_request(headers={"Authorization": "Bearer token"})
+    token = extract_token(request)
+    assert token == "token"
