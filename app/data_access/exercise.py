@@ -4,7 +4,7 @@ from app.data_access.base import BaseDataAccess
 from app.models.exercises_models import ExerciseInDB
 
 
-class ExerciseDateAccess(BaseDataAccess):
+class ExerciseDataAccess(BaseDataAccess):
     def __init__(self):
         super().__init__(container_name="exercises")
 

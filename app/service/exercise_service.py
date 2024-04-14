@@ -1,12 +1,12 @@
 from uuid import uuid4
 
-from app.data_access.exercise import ExerciseDateAccess
+from app.data_access.exercise import ExerciseDataAccess
 from app.exceptions import ExerciseAlreadyExistsException
 from app.models.exercises_models import ExerciseInCreate, ExerciseInDB
 
 
 class ExerciseService:
-    def __init__(self, exercise_data_access: ExerciseDateAccess = ExerciseDateAccess()):
+    def __init__(self, exercise_data_access: ExerciseDataAccess = ExerciseDataAccess()):
         self.exercise_data_access = exercise_data_access
 
     def get_system_and_user_exercises(self, user_id: str):
