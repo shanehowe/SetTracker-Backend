@@ -1,5 +1,5 @@
-from app.utils import to_camel
-from app.utils import add_days_to_date
+from app.utils.utils import to_camel
+from app.utils.date_utils import add_days_to_date
 import pytest
 import datetime
 
