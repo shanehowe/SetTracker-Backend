@@ -6,7 +6,7 @@ import requests
 from jwt.algorithms import RSAAlgorithm
 
 from app.exceptions import UnsupportedProviderException
-from app.utils import add_days_to_date
+from app.utils.date_utils import add_days_to_date
 
 SECRET = os.environ["JWT_SECRET"]
 
