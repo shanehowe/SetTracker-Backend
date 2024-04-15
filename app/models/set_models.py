@@ -13,14 +13,14 @@ class BaseSetModel(BaseModel):
     exercise_id: str
     weight: float
     reps: int
-    user_id: str
-    notes: str | None = None
-    tempo: Tempo | None = None
+    notes: str = ""
+    tempo: Tempo | None = Tempo(eccentric=0, concentric=0, pause=0)
 
 
 class SetInDB(BaseSetModel):
     id: str
     date_created: str
+    user_id: str
 
 
 class SetInCreate(BaseSetModel):
