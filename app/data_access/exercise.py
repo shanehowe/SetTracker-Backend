@@ -39,3 +39,6 @@ class ExerciseDataAccess(BaseDataAccess):
         if not items:
             return None
         return ExerciseInDB(**items[0])
+
+    def get_exercise_by_id(self, exercise_id: str) -> ExerciseInDB:
+        return ExerciseInDB(**self.container.read_item(item=exercise_id, partition_key=exercise_id))
