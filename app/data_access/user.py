@@ -7,14 +7,16 @@ class UserDataAccess(BaseDataAccess):
         super().__init__(container_name="users")
 
     def get_user_by_id(self, user_id: str):
-        return self.container.read_item(item=user_id, partition_key=user_id)
+        return UserInDB(**self.container.read_item(item=user_id, partition_key=user_id))
 
     def get_user_by_email(self, email: str) -> UserInDB | None:
         query = "SELECT * FROM users u WHERE u.email = @email"
         params = [dict(name="@email", value=email)]
-        users = list(self.container.query_items(
-            query=query, parameters=params, enable_cross_partition_query=True  # type: ignore
-        ))
+        users = list(
+            self.container.query_items(
+                query=query, parameters=params, enable_cross_partition_query=True  # type: ignore
+            )
+        )
         if not users:
             return None
         return UserInDB(**users[0])
