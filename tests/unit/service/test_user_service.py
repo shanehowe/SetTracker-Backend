@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 from app.data_access.user import UserDataAccess
 from app.exceptions import AuthenticationException
@@ -22,6 +23,26 @@ def user_service(mock_user_data_access):
 @pytest.fixture
 def mock_decode_and_verify_token():
     return MagicMock()
+
+
+def test_get_user_by_id_returns_user_when_found(user_service, mock_user_data_access):
+    mock_user_data_access.get_user_by_id = MagicMock(
+        return_value=UserInDB(id="123", email="someting@email.com", provider="apple")
+    )
+    result = user_service.get_user_by_id("123")
+    assert isinstance(result, UserInDB)
+    mock_user_data_access.get_user_by_id.assert_called_once_with("123")
+
+
+def test_get_user_by_id_returns_none_when_user_not_found(
+    user_service, mock_user_data_access
+):
+    mock_user_data_access.get_user_by_id = MagicMock(
+        side_effect=CosmosResourceNotFoundError()
+    )
+    result = user_service.get_user_by_id("123")
+    assert result is None
+    mock_user_data_access.get_user_by_id.assert_called_once_with("123")
 
 
 def test_create_user(user_service, mock_user_data_access):
