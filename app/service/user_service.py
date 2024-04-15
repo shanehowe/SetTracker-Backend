@@ -1,9 +1,11 @@
 from uuid import uuid4
+
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from jwt.exceptions import PyJWTError
 
 from app.auth.tokens import decode_and_verify_token, encode_jwt
 from app.data_access.user import UserDataAccess
-from app.exceptions import UnsupportedProviderException, AuthenticationException
+from app.exceptions import AuthenticationException, UnsupportedProviderException
 from app.models.auth_models import AuthRequest
 from app.models.user_models import BaseUser, UserInDB
 
@@ -11,6 +13,17 @@ from app.models.user_models import BaseUser, UserInDB
 class UserService:
     def __init__(self, user_data_access=UserDataAccess()) -> None:
         self.user_data_access = user_data_access
+
+    def get_user_by_id(self, user_id: str) -> UserInDB | None:
+        """
+        Get a user by their ID
+        :param user_id: The ID of the user
+        :return: The user or None if not found
+        """
+        try:
+            return self.user_data_access.get_user_by_id(user_id)
+        except CosmosResourceNotFoundError:
+            return None
 
     def authenticate(self, auth_data: AuthRequest) -> dict[str, str]:
         """
@@ -39,10 +52,10 @@ class UserService:
                 email=email_from_token, provider=auth_data.provider
             )
             user_for_auth = self.create_user(user_to_create)
-        
+
         return {
             "id": user_for_auth.id,
-            "token": encode_jwt({"id": user_for_auth.id, "email": user_for_auth.email})
+            "token": encode_jwt({"id": user_for_auth.id, "email": user_for_auth.email}),
         }
 
     def create_user(self, user: BaseUser):
