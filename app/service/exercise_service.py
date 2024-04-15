@@ -1,5 +1,7 @@
 from uuid import uuid4
 
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
+
 from app.data_access.exercise import ExerciseDataAccess
 from app.exceptions import ExerciseAlreadyExistsException
 from app.models.exercises_models import ExerciseInCreate, ExerciseInDB
@@ -23,6 +25,12 @@ class ExerciseService:
             id=exercise_id, name=exercise.name, body_parts=[], creator=user_id
         )
         return self.exercise_data_access.create_custom_exercise(exercise_to_create)
+
+    def get_exercise_by_id(self, exercise_id: str):
+        try:
+            return self.exercise_data_access.get_exercise_by_id(exercise_id)
+        except CosmosResourceNotFoundError:
+            return None
 
 
 def get_exercise_service():
