@@ -5,6 +5,7 @@ from app.exceptions import ExerciseDoesNotExistException, UserDoesNotExistExcept
 from app.models.set_models import SetInCreate, SetInDB
 from app.service.exercise_service import ExerciseService
 from app.service.user_service import UserService
+from app.utils.date_utils import generate_utc_timestamp
 
 
 class SetService:
@@ -42,7 +43,10 @@ class SetService:
             )
         set_id = str(uuid4())
         set_to_create = SetInDB(
-            id=set_id, **set_in_create.model_dump(), user_id=user_id
+            id=set_id,
+            **set_in_create.model_dump(),
+            user_id=user_id,
+            date_created=generate_utc_timestamp(),
         )
         return self.set_data_access.create_set(set_to_create)
 
