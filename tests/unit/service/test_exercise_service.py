@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 from app.exceptions import ExerciseAlreadyExistsException
 from app.models.exercises_models import ExerciseInCreate, ExerciseInDB
@@ -15,6 +16,30 @@ def mock_exercise_data_access():
 @pytest.fixture
 def exercise_service(mock_exercise_data_access):
     return ExerciseService(mock_exercise_data_access)
+
+
+def test_get_exercise_by_id_returns_none_when_exercise_not_found(
+    exercise_service, mock_exercise_data_access
+):
+    mock_exercise_data_access.get_exercise_by_id = MagicMock(
+        side_effect=CosmosResourceNotFoundError()
+    )
+    result = exercise_service.get_exercise_by_id("123")
+    assert result is None
+    mock_exercise_data_access.get_exercise_by_id.assert_called_once_with("123")
+
+
+def test_get_exercise_by_id_returns_exercise_when_found(
+    exercise_service, mock_exercise_data_access
+):
+    mock_exercise_data_access.get_exercise_by_id = MagicMock(
+        return_value=ExerciseInDB(
+            id="123", name="name", body_parts=[], creator="system"
+        )
+    )
+    result = exercise_service.get_exercise_by_id("123")
+    assert isinstance(result, ExerciseInDB)
+    mock_exercise_data_access.get_exercise_by_id.assert_called_once_with("123")
 
 
 def test_get_system_and_user_exercises(exercise_service, mock_exercise_data_access):
@@ -46,10 +71,7 @@ def test_create_custom_exercise_creates_exercise_with_same_name_as_pass_in_argum
         )
     )
     # Discard return type as its mocked. Do assertions on the call args.
-    exercise_service.create_custom_exercise(
-        ExerciseInCreate(name=exercise_name),
-        "1"
-    )
+    exercise_service.create_custom_exercise(ExerciseInCreate(name=exercise_name), "1")
     mock_exercise_data_access.create_custom_exercise.assert_called_once()
     arg = mock_exercise_data_access.create_custom_exercise.call_args.args[0]
     assert isinstance(arg, ExerciseInDB)
