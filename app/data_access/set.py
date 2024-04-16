@@ -4,7 +4,7 @@ from app.models.set_models import SetInDB
 
 class SetDataAccess(BaseDataAccess):
     def __init__(self) -> None:
-        super().__init__(container_name="sets")
+        super().__init__(container_name="exercise-sets")
 
     def get_users_sets_by_exercise_id(
         self, exercise_id: str, user_id: str
