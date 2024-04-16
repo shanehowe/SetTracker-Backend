@@ -6,6 +6,7 @@ from app.models.set_models import SetInCreate, SetInDB
 from app.service.exercise_service import ExerciseService
 from app.service.user_service import UserService
 from app.utils.date_utils import generate_utc_timestamp
+from app.utils.set_utils import group_sets_by_date
 
 
 class SetService:
@@ -20,9 +21,11 @@ class SetService:
         self.user_service = user_service
 
     def get_users_sets_by_exercise_id(self, exercise_id: str, user_id: str):
-        return self.set_data_access.get_users_sets_by_exercise_id(
+        retrieved_sets = self.set_data_access.get_users_sets_by_exercise_id(
             exercise_id=exercise_id, user_id=user_id
         )
+        grouped_sets = group_sets_by_date(retrieved_sets)
+        return grouped_sets
 
     def create_set(self, set_in_create: SetInCreate, user_id: str):
         """
