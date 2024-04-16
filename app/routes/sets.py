@@ -10,7 +10,7 @@ from app.service.set_service import SetService, get_set_service
 set_router = APIRouter(prefix="/sets", tags=["sets"])
 
 
-@set_router.get("/{exercise_id}")
+@set_router.get("/{exercise_id}", response_model_by_alias=True)
 def get_users_sets_by_exercise_id(
     exercise_id: str,
     set_service: Annotated[SetService, Depends(get_set_service)],
@@ -19,7 +19,7 @@ def get_users_sets_by_exercise_id(
     return set_service.get_users_sets_by_exercise_id(exercise_id, current_user["id"])
 
 
-@set_router.post("/", status_code=status.HTTP_201_CREATED)
+@set_router.post("/", status_code=status.HTTP_201_CREATED, response_model_by_alias=True)
 def create_set(
     set_to_create: SetInCreate,
     set_service: Annotated[SetService, Depends(get_set_service)],
