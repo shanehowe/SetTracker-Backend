@@ -38,5 +38,7 @@ def sort_set_history(set_history: list[SetGroup]) -> list[SetGroup]:
     data_for_sort = deepcopy(set_history)
     for set_group in data_for_sort:
         set_group.sets.sort(key=lambda x: datetime.fromisoformat(x.date_created))
-    data_for_sort.sort(key=lambda x: datetime.fromisoformat(x.date_created), reverse=True)
+    data_for_sort.sort(
+        key=lambda x: datetime.fromisoformat(x.date_created), reverse=True
+    )
     return data_for_sort
