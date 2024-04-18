@@ -1,7 +1,14 @@
 from uuid import uuid4
 
+from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
+
 from app.data_access.set import SetDataAccess
-from app.exceptions import ExerciseDoesNotExistException, UserDoesNotExistException
+from app.exceptions import (
+    ExerciseDoesNotExistException,
+    SetDoesNotExistException,
+    UnauthorizedAccessException,
+    UserDoesNotExistException,
+)
 from app.models.set_models import SetInCreate, SetInDB
 from app.service.exercise_service import ExerciseService
 from app.service.user_service import UserService
@@ -19,6 +26,12 @@ class SetService:
         self.set_data_access = set_data_access
         self.exercise_service = exercise_service
         self.user_service = user_service
+
+    def get_set_by_id(self, set_id: str):
+        try:
+            return self.set_data_access.get_set_by_id(set_id)
+        except CosmosResourceNotFoundError:
+            return None
 
     def get_users_sets_by_exercise_id(self, exercise_id: str, user_id: str):
         retrieved_sets = self.set_data_access.get_users_sets_by_exercise_id(
@@ -52,6 +65,29 @@ class SetService:
             date_created=generate_utc_timestamp(),
         )
         return self.set_data_access.create_set(set_to_create)
+
+    def delete_set(self, set_id: str, user_id: str):
+        """
+        Deletes a set with the given set_id if it exists and belongs to the specified user.
+
+        :param set_id (str): The ID of the set to be deleted.
+        :param user_id (str): The ID of the user who owns the set.
+
+        :returns bool: True if the set is successfully deleted, False otherwise.
+
+        :raises SetDoesNotExistException: If the set with the given set_id does not exist.
+        :raises UnauthorizedAccessException: If the set does not belong to the specified user.
+        """
+        set_to_delete = self.get_set_by_id(set_id)
+        if set_to_delete is None:
+            raise SetDoesNotExistException(f"Set with ID: {set_id} does not exist")
+        elif set_to_delete.user_id != user_id:
+            raise UnauthorizedAccessException("Set does not belong to user")
+        try:
+            self.set_data_access.delete_set(set_id)
+            return True
+        except CosmosHttpResponseError:
+            return False
 
 
 def get_set_service():
