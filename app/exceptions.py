@@ -22,3 +22,7 @@ class UserDoesNotExistException(Exception):
 
 class ExerciseDoesNotExistException(Exception):
     """Raised when an exercise does not exist"""
+
+
+class SetDoesNotExistException(Exception):
+    """Raised when an exercises set does not exist"""
