@@ -19,7 +19,7 @@ def group_sets_by_date(sets: list[SetInDB]) -> list[SetGroup]:
         acc[dict_key].append(set_)
         return acc
 
-    grouped_dict = functools.reduce(__grouping_func, sets, {})
+    grouped_dict: dict = functools.reduce(__grouping_func, sets, {})
     return [
         SetGroup(sets=value, date_created=key) for key, value in grouped_dict.items()
     ]
@@ -37,7 +37,9 @@ def sort_set_history(set_history: list[SetGroup]) -> list[SetGroup]:
     """
     data_for_sort = deepcopy(set_history)
     for set_group in data_for_sort:
-        set_group.sets.sort(key=lambda x: datetime.fromisoformat(x.date_created))
+        set_group.sets.sort(
+            key=lambda x: datetime.fromisoformat(x.date_created), reverse=True
+        )
     data_for_sort.sort(
         key=lambda x: datetime.fromisoformat(x.date_created), reverse=True
     )
