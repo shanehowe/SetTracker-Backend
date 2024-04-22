@@ -35,12 +35,12 @@ def sorted_set_history(set_history: list[SetGroup]) -> list[SetGroup]:
     :param set_history: The data to be sorted
     :returns SetGroup: In sorted order.
     """
+
+    def sort_key(item: SetGroup | SetInDB):
+        return datetime.fromisoformat(item.date_created)
+
     data_for_sort = deepcopy(set_history)
     for set_group in data_for_sort:
-        set_group.sets.sort(
-            key=lambda x: datetime.fromisoformat(x.date_created), reverse=True
-        )
-    data_for_sort.sort(
-        key=lambda x: datetime.fromisoformat(x.date_created), reverse=True
-    )
+        set_group.sets.sort(key=sort_key, reverse=True)
+    data_for_sort.sort(key=sort_key, reverse=True)
     return data_for_sort
