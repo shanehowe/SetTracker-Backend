@@ -25,7 +25,7 @@ def group_sets_by_date(sets: list[SetInDB]) -> list[SetGroup]:
     ]
 
 
-def sort_set_history(set_history: list[SetGroup]) -> list[SetGroup]:
+def sorted_set_history(set_history: list[SetGroup]) -> list[SetGroup]:
     """
     Set history in json/dict format is a list of dicts. Each
     dict has a date_created and sets key which is a list.
