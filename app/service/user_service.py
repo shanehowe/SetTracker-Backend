@@ -7,7 +7,7 @@ from app.auth.tokens import decode_and_verify_token, encode_jwt
 from app.data_access.user import UserDataAccess
 from app.exceptions import AuthenticationException, UnsupportedProviderException
 from app.models.auth_models import AuthRequest
-from app.models.user_models import BaseUser, UserInDB
+from app.models.user_models import BaseUser, UserInDB, UserInResponse
 
 
 class UserService:
@@ -25,7 +25,7 @@ class UserService:
         except CosmosResourceNotFoundError:
             return None
 
-    def authenticate(self, auth_data: AuthRequest) -> dict[str, str]:
+    def authenticate(self, auth_data: AuthRequest) -> UserInResponse:
         """
         Authenticate a user based on the auth data provided
 
@@ -53,10 +53,11 @@ class UserService:
             )
             user_for_auth = self.create_user(user_to_create)
 
-        return {
-            "id": user_for_auth.id,
-            "token": encode_jwt({"id": user_for_auth.id, "email": user_for_auth.email}),
-        }
+        return UserInResponse(
+            id=user_for_auth.id,
+            token=encode_jwt({"id": user_for_auth.id, "email": user_for_auth.email}),
+            preferences=user_for_auth.preferences,
+        )
 
     def create_user(self, user: BaseUser):
         user_id = str(uuid4())
