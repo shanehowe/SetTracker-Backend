@@ -6,7 +6,7 @@ from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from app.data_access.user import UserDataAccess
 from app.exceptions import AuthenticationException
 from app.models.auth_models import AuthRequest
-from app.models.user_models import BaseUser, UserInDB
+from app.models.user_models import BaseUser, UserInDB, UserInResponse
 from app.service.user_service import UserService
 
 
@@ -121,7 +121,7 @@ def test_authenticate_calls_create_user_when_user_for_auth_doesnt_exist(
     assert mock_user_data_access.create_user.called_once
 
 
-def test_authenticate_returns_dict_with_id_and_token_field(
+def test_authenticate_returns_model_with_id__token_and_preferences_fields(
     mock_user_data_access, user_service, monkeypatch, mock_decode_and_verify_token
 ):
     mock_decode_and_verify_token.return_value = {"email": "some_email@example.com"}
@@ -137,7 +137,9 @@ def test_authenticate_returns_dict_with_id_and_token_field(
     auth_request = AuthRequest(token="token", provider="apple")
 
     result = user_service.authenticate(auth_request)
-    assert isinstance(result, dict)
-    assert result.get("id") is not None
-    assert result.get("token") is not None
+    assert isinstance(result, UserInResponse)
+    dumped_model = result.model_dump()
+    assert dumped_model.get("id") is not None
+    assert dumped_model.get("token") is not None
+    assert dumped_model.get("preferences") is not None
     assert mock_user_data_access.get_user_by_email.called_once
