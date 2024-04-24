@@ -26,3 +26,7 @@ class ExerciseDoesNotExistException(Exception):
 
 class SetDoesNotExistException(Exception):
     """Raised when an exercises set does not exist"""
+
+
+class EntityNotFoundException(Exception):
+    """The requested entity was not found"""
