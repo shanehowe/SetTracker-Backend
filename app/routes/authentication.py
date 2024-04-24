@@ -21,4 +21,4 @@ def sign_in(
     except AuthenticationException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     else:
-        return UserInResponse(**authenticated_user)
+        return authenticated_user
