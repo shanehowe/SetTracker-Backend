@@ -70,7 +70,7 @@ class UserService:
 
     def update_user_preferences(
         self, preferences: Preferences, user_id: str
-    ) -> Preferences:
+    ) -> None:
         """
         Update users preferences.
         :param updated_preferences: The preferences object with the data to update
@@ -89,8 +89,7 @@ class UserService:
             if updating_preferences.get(key) is None:
                 updating_preferences[key] = current_preferences[key]
         user_to_update.preferences = Preferences(**updating_preferences)
-        updated_user = self.user_data_access.update_user(user_to_update)
-        return updated_user.preferences
+        self.user_data_access.update_user(user_to_update)
 
 
 def get_user_service() -> UserService:
