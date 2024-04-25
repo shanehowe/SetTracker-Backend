@@ -4,9 +4,9 @@ import pytest
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 from app.data_access.user import UserDataAccess
-from app.exceptions import AuthenticationException
+from app.exceptions import AuthenticationException, EntityNotFoundException
 from app.models.auth_models import AuthRequest
-from app.models.user_models import BaseUser, UserInDB
+from app.models.user_models import BaseUser, Preferences, UserInDB, UserInResponse
 from app.service.user_service import UserService
 
 
@@ -121,7 +121,7 @@ def test_authenticate_calls_create_user_when_user_for_auth_doesnt_exist(
     assert mock_user_data_access.create_user.called_once
 
 
-def test_authenticate_returns_dict_with_id_and_token_field(
+def test_authenticate_returns_model_with_id__token_and_preferences_fields(
     mock_user_data_access, user_service, monkeypatch, mock_decode_and_verify_token
 ):
     mock_decode_and_verify_token.return_value = {"email": "some_email@example.com"}
@@ -137,7 +137,57 @@ def test_authenticate_returns_dict_with_id_and_token_field(
     auth_request = AuthRequest(token="token", provider="apple")
 
     result = user_service.authenticate(auth_request)
-    assert isinstance(result, dict)
-    assert result.get("id") is not None
-    assert result.get("token") is not None
+    assert isinstance(result, UserInResponse)
+    dumped_model = result.model_dump()
+    assert dumped_model.get("id") is not None
+    assert dumped_model.get("token") is not None
+    assert dumped_model.get("preferences") is not None
     assert mock_user_data_access.get_user_by_email.called_once
+
+
+def test_update_preferences_calls_get_user_by_id_in_service_class(user_service):
+    user_service.get_user_by_id = MagicMock(
+        return_value=UserInDB(
+            id="132", email="some_email@example.com", provider="apple"
+        )
+    )
+    preferences_for_update = Preferences(theme="system")
+    user_id = "1"
+
+    user_service.update_user_preferences(preferences_for_update, user_id)
+    user_service.get_user_by_id.assert_called_once_with(user_id)
+
+
+def test_update_preferences_raises_exception_when_user_not_found(user_service):
+    user_service.get_user_by_id = MagicMock(return_value=None)
+    preferences_for_update = Preferences(theme="system")
+    user_id = "1"
+
+    with pytest.raises(EntityNotFoundException):
+        user_service.update_user_preferences(preferences_for_update, user_id)
+
+
+def test_update_preferences_calls_data_access_method_with_updated_preferences(
+    user_service, mock_user_data_access
+):
+    user_to_update = UserInDB(
+        id="132",
+        email="some_email@example.com",
+        provider="apple",
+        preferences=Preferences(theme="system"),
+    )
+    user_service.get_user_by_id = MagicMock(return_value=user_to_update)
+    mock_user_data_access.update_user = MagicMock()
+    preferences_for_update = Preferences(theme="light")
+    user_id = "132"
+
+    user_service.update_user_preferences(preferences_for_update, user_id)
+    user_after_updating_preferences = UserInDB(
+        id="132",
+        email="some_email@example.com",
+        provider="apple",
+        preferences=preferences_for_update,
+    )
+    mock_user_data_access.update_user.assert_called_once_with(
+        user_after_updating_preferences
+    )

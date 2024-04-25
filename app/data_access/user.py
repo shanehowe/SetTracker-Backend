@@ -25,9 +25,9 @@ class UserDataAccess(BaseDataAccess):
         created_user = self.container.create_item(body=user.model_dump())
         return UserInDB(**created_user)
 
-    def update_user(self, user: UserInDB) -> dict:
+    def update_user(self, user: UserInDB) -> UserInDB:
         updated_user = self.container.upsert_item(body=user.model_dump())
-        return updated_user
+        return UserInDB(**updated_user)
 
     def delete_user(self, user_id: str) -> None:
         self.container.delete_item(item=user_id, partition_key=user_id)
