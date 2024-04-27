@@ -68,9 +68,7 @@ class UserService:
         user_for_creation = UserInDB(**user.model_dump(), id=user_id)
         return self.user_data_access.create_user(user_for_creation)
 
-    def update_user_preferences(
-        self, preferences: Preferences, user_id: str
-    ) -> None:
+    def update_user_preferences(self, preferences: Preferences, user_id: str) -> None:
         """
         Update users preferences.
         :param updated_preferences: The preferences object with the data to update
@@ -90,6 +88,12 @@ class UserService:
                 updating_preferences[key] = current_preferences[key]
         user_to_update.preferences = Preferences(**updating_preferences)
         self.user_data_access.update_user(user_to_update)
+
+    def get_user_preferences(self, user_id: str) -> Preferences:
+        user = self.get_user_by_id(user_id)
+        if user is None:
+            raise EntityNotFoundException(f"No user with ID: {user_id}")
+        return user.preferences
 
 
 def get_user_service() -> UserService:
