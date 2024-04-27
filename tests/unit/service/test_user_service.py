@@ -191,3 +191,30 @@ def test_update_preferences_calls_data_access_method_with_updated_preferences(
     mock_user_data_access.update_user.assert_called_once_with(
         user_after_updating_preferences
     )
+
+
+def test_get_user_preferences_calls_get_user_by_id_service_method(user_service):
+    user_service.get_user_by_id = MagicMock(return_value=None)
+    _ = user_service.get_user_preferences("1")
+
+    user_service.get_user_by_id.assert_called_once_with("1")
+
+
+def test_get_user_preferences_raises_exception_when_no_user_found(user_service):
+    user_service.get_user_by_id = MagicMock(return_value=None)
+    with pytest.raises(EntityNotFoundException):
+        user_service.get_user_preferences("1")
+
+
+def test_get_user_preferences_returns_preferences_of_found_user(user_service):
+    user_service.get_user_by_id = MagicMock(
+        return_value=UserInDB(
+            email="someone@email.com",
+            provider="apple",
+            id="123",
+            preferences=Preferences(theme="dark"),
+        )
+    )
+    result = user_service.get_user_preferences("123")
+    assert isinstance(result, Preferences)
+    assert result.theme == "dark"
