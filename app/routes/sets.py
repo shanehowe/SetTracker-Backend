@@ -4,10 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.dependencies import get_current_user
 from app.exceptions import (
-    ExerciseDoesNotExistException,
-    SetDoesNotExistException,
+    EntityNotFoundException,
     UnauthorizedAccessException,
-    UserDoesNotExistException,
 )
 from app.models.set_models import SetInCreate
 from app.service.set_service import SetService, get_set_service
@@ -32,7 +30,7 @@ def create_set(
 ):
     try:
         return set_service.create_set(set_to_create, current_user["id"])
-    except (UserDoesNotExistException, ExerciseDoesNotExistException) as e:
+    except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
@@ -44,7 +42,7 @@ def delete_set(
 ):
     try:
         result = set_service.delete_set(set_id, current_user["id"])
-    except SetDoesNotExistException as e:
+    except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except UnauthorizedAccessException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))

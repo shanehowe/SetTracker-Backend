@@ -3,12 +3,7 @@ from uuid import uuid4
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
 from app.data_access.set import SetDataAccess
-from app.exceptions import (
-    ExerciseDoesNotExistException,
-    SetDoesNotExistException,
-    UnauthorizedAccessException,
-    UserDoesNotExistException,
-)
+from app.exceptions import EntityNotFoundException, UnauthorizedAccessException
 from app.models.set_models import SetInCreate, SetInDB
 from app.service.exercise_service import ExerciseService
 from app.service.user_service import UserService
@@ -46,15 +41,15 @@ class SetService:
         :param set_in_create: The set to create
         :param user_id: The ID of the user creating the set
         :return: The created set
-        :raises UserDoesNotExistException: If the user does not exist.
-        :raises ExerciseDoesNotExistException: If the exercise does not exist.
+        :raises EntityNotFoundException: If the user does not exist.
+        :raises EntityNotFoundException: If the exercise does not exist.
         """
         if self.user_service.get_user_by_id(user_id) is None:
-            raise UserDoesNotExistException(f"User with ID {user_id} does not exist")
+            raise EntityNotFoundException(f"User with ID {user_id} does not exist")
         elif (
             self.exercise_service.get_exercise_by_id(set_in_create.exercise_id) is None
         ):
-            raise ExerciseDoesNotExistException(
+            raise EntityNotFoundException(
                 f"Exercise with ID {set_in_create.exercise_id} does not exist"
             )
         set_id = str(uuid4())
@@ -75,12 +70,12 @@ class SetService:
 
         :returns bool: True if the set is successfully deleted, False otherwise.
 
-        :raises SetDoesNotExistException: If the set with the given set_id does not exist.
+        :raises EntityNotFoundException: If the set with the given set_id does not exist.
         :raises UnauthorizedAccessException: If the set does not belong to the specified user.
         """
         set_to_delete = self.get_set_by_id(set_id)
         if set_to_delete is None:
-            raise SetDoesNotExistException(f"Set with ID: {set_id} does not exist")
+            raise EntityNotFoundException(f"Set with ID: {set_id} does not exist")
         elif set_to_delete.user_id != user_id:
             raise UnauthorizedAccessException("Set does not belong to user")
         try:

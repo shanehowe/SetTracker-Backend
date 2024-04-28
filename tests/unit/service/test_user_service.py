@@ -194,7 +194,14 @@ def test_update_preferences_calls_data_access_method_with_updated_preferences(
 
 
 def test_get_user_preferences_calls_get_user_by_id_service_method(user_service):
-    user_service.get_user_by_id = MagicMock(return_value=None)
+    user_service.get_user_by_id = MagicMock(
+        return_value=UserInDB(
+            email="someone@email.com",
+            provider="apple",
+            id="123",
+            preferences=Preferences(theme="dark"),
+        )
+    )
     _ = user_service.get_user_preferences("1")
 
     user_service.get_user_by_id.assert_called_once_with("1")
