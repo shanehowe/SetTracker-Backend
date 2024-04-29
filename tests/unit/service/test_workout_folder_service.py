@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
-from app.exceptions import UnauthorizedAccessException
+from app.exceptions import EntityNotFoundException, UnauthorizedAccessException
 from app.models.exercises_models import ExerciseInDB
 from app.models.workout_folder_models import (
     WorkoutFolderInDB,
@@ -199,7 +199,7 @@ def test_delete_folder_raises_value_error_when_folder_doesnt_exist(
     mock_workout_folder_data_access.get_folder_by_id = MagicMock(
         side_effect=(CosmosResourceNotFoundError())
     )
-    with pytest.raises(ValueError):
+    with pytest.raises(EntityNotFoundException):
         workout_folder_service.delete_workout_folder("1", "1")
     assert not mock_workout_folder_data_access.delete_workout_folder.called
 

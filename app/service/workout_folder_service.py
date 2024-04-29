@@ -3,7 +3,7 @@ from uuid import uuid4
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
 from app.data_access.workout_folder import WorkoutFolderDataAccess
-from app.exceptions import UnauthorizedAccessException
+from app.exceptions import EntityNotFoundException, UnauthorizedAccessException
 from app.models.workout_folder_models import (
     WorkoutFolderInDB,
     WorkoutFolderInRequest,
@@ -77,7 +77,7 @@ class WorkoutFolderService:
         """
         folder_to_delete = self.get_folder_by_id(folder_id, user_id)
         if folder_to_delete is None:
-            raise ValueError("Folder with requested id does not exist")
+            raise EntityNotFoundException("Folder with requested id does not exist")
         try:
             self.workout_folder_data_access.delete_workout_folder(folder_id)
             return True

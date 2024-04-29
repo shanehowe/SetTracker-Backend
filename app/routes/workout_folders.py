@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.dependencies import get_current_user
-from app.exceptions import UnauthorizedAccessException
+from app.exceptions import EntityNotFoundException, UnauthorizedAccessException
 from app.models.workout_folder_models import (
     WorkoutFolderInRequest,
     WorkoutFolderInUpdate,
@@ -99,7 +99,7 @@ def delete_workout_folder(
         is_success = workout_folder_service.delete_workout_folder(
             folder_id, decoded_token["id"]
         )
-    except ValueError as e:
+    except EntityNotFoundException as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except UnauthorizedAccessException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
