@@ -1,8 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from app.models.base_model import CustomBaseModel
 
 
-class AuthRequest(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class AuthRequest(CustomBaseModel):
     token: str
     provider: str
