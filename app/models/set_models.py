@@ -1,21 +1,23 @@
-from pydantic import BaseModel, ConfigDict
-from pydantic.alias_generators import to_camel
+from pydantic import Field
+
+from app.models.base_model import CustomBaseModel
+
+GREATER_EQUAL_TO_ZERO = Field(ge=0)
+GREATER_THAN_ZERO = Field(gt=0)
 
 
-class Tempo(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
-    eccentric: int
-    concentric: int
-    pause: int
+class Tempo(CustomBaseModel):
+    eccentric: int = GREATER_EQUAL_TO_ZERO
+    concentric: int = GREATER_EQUAL_TO_ZERO
+    pause: int = GREATER_EQUAL_TO_ZERO
 
 
-class BaseSetModel(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+class BaseSetModel(CustomBaseModel):
     exercise_id: str
-    weight: float
-    reps: int
+    weight: float = GREATER_THAN_ZERO
+    reps: int = GREATER_THAN_ZERO
     notes: str = ""
-    tempo: Tempo | None = Tempo(eccentric=0, concentric=0, pause=0)
+    tempo: Tempo | None = None
 
 
 class SetInDB(BaseSetModel):
@@ -28,7 +30,6 @@ class SetInCreate(BaseSetModel):
     pass
 
 
-class SetGroup(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+class SetGroup(CustomBaseModel):
     sets: list[SetInDB]
     date_created: str

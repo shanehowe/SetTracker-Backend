@@ -1,16 +1,15 @@
 from typing import Literal
-from pydantic import BaseModel, EmailStr, ConfigDict
+
+from pydantic import EmailStr
+
+from app.models.base_model import CustomBaseModel
 
 
-class Preferences(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class Preferences(CustomBaseModel):
     theme: Literal["system", "dark", "light"]
 
 
-class BaseUser(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
-
+class BaseUser(CustomBaseModel):
     email: EmailStr
     provider: str
 
@@ -20,7 +19,7 @@ class UserInDB(BaseUser):
     preferences: Preferences = Preferences(theme="system")
 
 
-class UserInResponse(BaseModel):
+class UserInResponse(CustomBaseModel):
     id: str
     token: str
     preferences: Preferences = Preferences(theme="system")
