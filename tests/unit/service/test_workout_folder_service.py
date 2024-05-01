@@ -105,31 +105,29 @@ def test_update_workout_folder(mock_workout_folder_data_access, workout_folder_s
                 user_id="123",
                 name="updated folder",
                 exercises=[
-                    ExerciseInDB(id="1", name="test", body_parts=[], creator="123")
+                    ExerciseInDB(id="1", name="test name", body_parts=[], creator="123")
                 ],
             )
         )
     )
-    updated_folder = workout_folder_service.update_workout_folder(
+    workout_folder_service.update_workout_folder(
         "123",
         WorkoutFolderInUpdate(
             name="updated folder",
-            exercises=[ExerciseInDB(id="1", name="test", body_parts=[], creator="123")],
+            exercises=[
+                ExerciseInDB(id="1", name="test name", body_parts=[], creator="123")
+            ],
         ),
         "123",
     )
-    assert updated_folder.id == "123"
-    assert updated_folder.user_id == "123"
-    assert updated_folder.name == "updated folder"
-    assert updated_folder.exercises == [
-        ExerciseInDB(id="1", name="test", body_parts=[], creator="123")
-    ]
     mock_workout_folder_data_access.update_workout_folder.assert_called_with(
         WorkoutFolderInDB(
             id="123",
             user_id="123",
             name="updated folder",
-            exercises=[ExerciseInDB(id="1", name="test", body_parts=[], creator="123")],
+            exercises=[
+                ExerciseInDB(id="1", name="test name", body_parts=[], creator="123")
+            ],
         )
     )
 
