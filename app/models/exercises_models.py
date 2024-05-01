@@ -2,7 +2,7 @@ from pydantic import Field
 
 from app.models.base_model import CustomBaseModel
 
-STR_1_TO_30 = Field(min_length=1, max_length=30)
+STR_5_TO_30 = Field(min_length=5, max_length=30)
 
 
 class ExerciseInDB(CustomBaseModel):
@@ -13,4 +13,4 @@ class ExerciseInDB(CustomBaseModel):
 
 
 class ExerciseInCreate(CustomBaseModel):
-    name: str = STR_1_TO_30
+    name: str = STR_5_TO_30
