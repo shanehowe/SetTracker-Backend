@@ -82,7 +82,9 @@ class SetService:
         if set_to_delete is None:
             raise SetDoesNotExistException(f"Set with ID: {set_id} does not exist")
         elif set_to_delete.user_id != user_id:
-            raise UnauthorizedAccessException("Set does not belong to user")
+            raise UnauthorizedAccessException(
+                "Only the person who created this set can delete it"
+            )
         try:
             self.set_data_access.delete_set(set_id)
             return True
