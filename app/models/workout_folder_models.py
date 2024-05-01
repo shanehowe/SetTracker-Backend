@@ -5,7 +5,7 @@ from pydantic import Field, field_validator
 from app.models.base_model import CustomBaseModel
 from app.models.exercises_models import ExerciseInDB
 
-VALID_LENGTH = Field(min_length=1, max_length=25)
+VALID_LENGTH = Field(min_length=1, max_length=20)
 
 
 class WorkoutFolderInDB(CustomBaseModel):
@@ -29,6 +29,6 @@ class WorkoutFolderInUpdate(CustomBaseModel):
     def check_name_if_not_none(cls, name: Optional[str]):
         # If name is none, we don't need to check it
         # might just be updating exercises
-        if name is None:
-            return
-        assert len(name) >= 1 and len(name) <= 25
+        if name is not None:
+            assert len(name) >= 1 and len(name) <= 20
+        return name
