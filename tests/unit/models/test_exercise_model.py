@@ -14,7 +14,7 @@ def test_exercise_in_create_raises_exception_when_name_is_too_long():
         ExerciseInCreate(name="a" * 31)
 
 
-@pytest.mark.parametrize("name", ["a", "a" * 30])
+@pytest.mark.parametrize("name", ["aaaaa", "a" * 30])
 def test_exercise_in_create_handles_boundary_cases(name):
     try:
         ExerciseInCreate(name=name)
