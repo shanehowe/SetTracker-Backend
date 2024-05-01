@@ -53,10 +53,14 @@ def test_create_custom_exercise_raises_exception_when_exercise_exists(
     exercise_service, mock_exercise_data_access
 ):
     mock_exercise_data_access.get_exercise_by_name = MagicMock(
-        return_value=ExerciseInDB(id="1", name="name", body_parts=[], creator="system")
+        return_value=ExerciseInDB(
+            id="1", name="some name", body_parts=[], creator="system"
+        )
     )
     with pytest.raises(ExerciseAlreadyExistsException):
-        exercise_service.create_custom_exercise(ExerciseInCreate(name="name"), "12")
+        exercise_service.create_custom_exercise(
+            ExerciseInCreate(name="some name"), "12"
+        )
     assert not mock_exercise_data_access.create_custom_exercise.called
 
 
