@@ -10,7 +10,7 @@ from app.models.workout_folder_models import (
 
 @pytest.fixture
 def name_too_long():
-    return "a" * 26
+    return "a" * 21
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def test_workout_folder_in_db_raises_exception_when_name_is_too_long(name_too_lo
         )
 
 
-@pytest.mark.parametrize("name", ["a", "a" * 25])
+@pytest.mark.parametrize("name", ["a", "a" * 20])
 def test_workout_folder_in_db_handles_boundary_cases(name):
     try:
         WorkoutFolderInDB(id="1", name=name, user_id="1")
@@ -55,7 +55,7 @@ def test_workout_folder_in_request_raises_exception_when_name_is_too_long(
         )
 
 
-@pytest.mark.parametrize("name", ["a", "a" * 25])
+@pytest.mark.parametrize("name", ["a", "a" * 20])
 def test_workout_folder_in_request_handles_boundary_cases(name):
     try:
         WorkoutFolderInRequest(name=name, exercises=[])
