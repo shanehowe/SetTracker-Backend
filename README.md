@@ -82,3 +82,6 @@ jwt.encode(payload, "GenerateRandomSecret", algorithm="HS256")
 Now you have your bearer token to make requests to the backend.
 
 - In your web browser navigate to ```http://localhost:7071/docs```. Here you will find the routes and HTTP methods for making requests.
+
+## Cleaning Up
+Once finished make sure to go to your Azure portal and remove the resources you created to avoid any charges.
