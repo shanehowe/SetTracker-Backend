@@ -30,6 +30,7 @@ An account needs to be set up. Heres what you need to do.
 - In Azure portal navigate to CosmosDB and select **create**
 - On the next screen choose **Azure Cosmos DB for NoSQL**
 - Complete the following forms
+- Once the resource has been created navigate there and got to data explorer, create a database
 - Name the database **set-tracker-db**
 - We will create the containers in the next step
 
@@ -47,7 +48,7 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-4. **Create the containers in CosmosDB** Navigate to the file ```setup_cosmos_db.py``` and run the script. This will create the containers needed for the application. Make sure you have the environment variables set up.
+4. **Create the containers in CosmosDB** Navigate to the file ```setup_cosmos_db.py``` and run the script. This will create the containers needed for the application. Make sure you have the environment variables set up. Runnign this file will create the required containers and add some dummy data.
 ```bash
 python3 setup_cosmos_db.py
 ```
