@@ -36,7 +36,7 @@ An account needs to be set up. Heres what you need to do.
 ### Setup
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/shanehowe/SetTracker-backend.git
+   git clone https://github.com/shanehowe/SetTracker-Backend.git
    cd SetTracker-backend
 2. **(Optional) Create a virtual environment**
 ```bash
