@@ -51,7 +51,7 @@ pip install -r requirements.txt
 python3 setup_cosmos_db.py
 ```
 5. **Create a script to run the backend**
-- Call the file anything, I named it ```start.sh```
+- Call a file call it ```start.sh``` in roote of project
 ```bash
 export DB_HOST="The URI of your CosmosDB" # Can be found in 'Keys'
 export DB_KEY="You Master Key"
