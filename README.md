@@ -50,7 +50,7 @@ pip install -r requirements.txt
 ```bash
 python3 setup_cosmos_db.py
 ```
-4. **Create a script to run the backend**
+5. **Create a script to run the backend**
 - Call the file anything, I named it ```start.sh```
 ```bash
 export DB_HOST="The URI of your CosmosDB" # Can be found in 'Keys'
@@ -60,7 +60,7 @@ export JWT_SECRET="GenerateRandomSecret"
 # Start the function app
 func start
 ```
-5. **Run the script you just created**
+6. **Run the script you just created**
 ```bash
 chmod u+x start.sh
 ./start.sh
