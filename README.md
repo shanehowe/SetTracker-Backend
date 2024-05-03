@@ -31,6 +31,7 @@ An account needs to be set up. Heres what you need to do.
 - On the next screen choose **Azure Cosmos DB for NoSQL**
 - Complete the following forms
 - Name the database **set-tracker-db**
+- We will create the containers in the next step
 
 ### Setup
 1. **Clone the repository**
@@ -44,6 +45,10 @@ python3 -m venv .venv
 3. **Install the requirements**
 ```bash
 pip install -r requirements.txt
+```
+4. **Create the containers in CosmosDB** Navigate to the file ```setup_cosmos_db.py``` and run the script. This will create the containers needed for the application. Make sure you have the environment variables set up.
+```bash
+python3 setup_cosmos_db.py
 ```
 4. **Create a script to run the backend**
 - Call the file anything, I named it ```start.sh```
@@ -64,18 +69,8 @@ chmod u+x start.sh
 ## Making Requests
 To make requests you will need to send a token in the header with your requests and said token needs to be linked to a user. Heres what you need to do.
 
-- Navigate to your CosmosDB resource in Azure, click data explorer, users container, new item and insert the following document.
-```json
-{
-    "email": "doestnotmatter@email.com",
-    "provider": "apple",
-    "id": "f4ed09fc-ee99-43e0-8b19-123424f988ac",
-    "preferences": {
-        "theme": "system"
-    },
-}
-```
-- Back your code editor, open a python interactive shell and run the following
+- In your code editor, open a python interactive shell and run the following. This will generate a token for you to use. The user has been created if you have ran ```setup_cosmos_db.py```.
+
 ```python
 import jwt 
 
