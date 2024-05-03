@@ -5,7 +5,7 @@ This repository contains the backend service for the SetTracker application, an 
 
 ## Technologies Used
 - **Azure Functions**: Serverless compute service that lets you run event-triggered code without having to explicitly provision or manage infrastructure.
-- **FastAPI**: Modern, fast (high-performance), web framework for building APIs with Python 3.7+ based on standard Python type hints.
+- **FastAPI**: Modern, fast (high-performance), web framework for building APIs with Python based on standard Python type hints.
 - **CosmosDB**: Azure's fully managed NoSQL database for modern app development.
 - **Pydantic**: Data validation and settings management using Python type annotations.
 - **Pytest**: Framework makes it easy to write small tests, yet scales to support complex functional testing.
