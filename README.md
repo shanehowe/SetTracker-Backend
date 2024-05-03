@@ -41,6 +41,7 @@ An account needs to be set up. Heres what you need to do.
 2. **(Optional) Create a virtual environment**
 ```bash
 python3 -m venv .venv
+source .venv/bin/activate
 ```
 3. **Install the requirements**
 ```bash
