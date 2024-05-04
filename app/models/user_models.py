@@ -11,15 +11,24 @@ class Preferences(CustomBaseModel):
 
 class BaseUser(CustomBaseModel):
     email: EmailStr
-    provider: str
 
 
 class UserInDB(BaseUser):
     id: str
     preferences: Preferences = Preferences(theme="system")
+    provider: str | None = None
+    password_hash: str | None = None
 
 
 class UserInResponse(CustomBaseModel):
     id: str
     token: str
-    preferences: Preferences = Preferences(theme="system")
+    preferences: Preferences
+
+
+class UserOAuth(BaseUser):
+    provider: str
+
+
+class UserEmailAuth(BaseUser):
+    password_hash: str
