@@ -72,7 +72,7 @@ def test_create_user(user_service, mock_user_data_access):
     assert mock_user_data_access.create_user.called_once
 
 
-def test_authenticate_raises_exception_when_given_invalid_provider(
+def test_authenticate_oauth_raises_exception_when_given_invalid_provider(
     user_service, mock_user_data_access
 ):
     mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
@@ -83,7 +83,7 @@ def test_authenticate_raises_exception_when_given_invalid_provider(
     assert not mock_user_data_access.get_user_by_email.called
 
 
-def test_authenticate_raises_exception_when_given_invalid_token(
+def test_authenticate_oauth_raises_exception_when_given_invalid_token(
     user_service, mock_user_data_access, monkeypatch, mock_decode_and_verify_token
 ):
     mock_decode_and_verify_token.side_effect = ValueError("Invalid token")
@@ -96,7 +96,7 @@ def test_authenticate_raises_exception_when_given_invalid_token(
     assert not mock_user_data_access.get_user_by_email.called
 
 
-def test_authenticate_raises_exception_when_token_data_doesnt_contain_email_field(
+def test_authenticate_oauth_raises_exception_when_token_data_doesnt_contain_email_field(
     monkeypatch, user_service, mock_user_data_access, mock_decode_and_verify_token
 ):
     mock_user_data_access.get_user_by_email = MagicMock()
@@ -111,7 +111,7 @@ def test_authenticate_raises_exception_when_token_data_doesnt_contain_email_fiel
     assert not mock_user_data_access.get_user_by_email.called
 
 
-def test_authenticate_calls_create_user_when_user_for_auth_doesnt_exist(
+def test_authenticate_oauth_calls_create_user_when_user_for_auth_doesnt_exist(
     mock_user_data_access, user_service, monkeypatch, mock_decode_and_verify_token
 ):
     mock_decode_and_verify_token.return_value = {"email": "some_email@example.com"}
@@ -132,7 +132,7 @@ def test_authenticate_calls_create_user_when_user_for_auth_doesnt_exist(
     assert mock_user_data_access.create_user.called_once
 
 
-def test_authenticate_returns_model_with_id__token_and_preferences_fields(
+def test_authenticate_oauth_returns_model_with_id__token_and_preferences_fields(
     mock_user_data_access, user_service, monkeypatch, mock_decode_and_verify_token
 ):
     mock_decode_and_verify_token.return_value = {"email": "some_email@example.com"}
