@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
+from app.auth.passwords import get_password_hash
 from app.data_access.user import UserDataAccess
 from app.exceptions import (
     AuthenticationException,
@@ -13,7 +14,7 @@ from app.models.auth_models import AuthRequest
 from app.models.user_models import (
     Preferences,
     UserEmailAuth,
-    UserEmailAuthInSignUp,
+    UserEmailAuthInSignUpAndIn,
     UserInDB,
     UserInResponse,
     UserOAuth,
@@ -212,13 +213,15 @@ def test_sign_up_user_raises_exception_when_account_exists_with_requested_email(
     )
     with pytest.raises(EntityAlreadyExistsException):
         user_service.sign_up_user(
-            UserEmailAuthInSignUp(email="something@email.com", password="badpassword")
+            UserEmailAuthInSignUpAndIn(
+                email="something@email.com", password="badpassword"
+            )
         )
 
 
 def test_sign_up_user_hashes_plain_text_password(user_service, mock_user_data_access):
     mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
-    user_for_sign_up = UserEmailAuthInSignUp(
+    user_for_sign_up = UserEmailAuthInSignUpAndIn(
         email="something@email.com", password="badpassword"
     )
     with patch("app.service.user_service.get_password_hash") as mocked_pwrd_hash:
@@ -231,7 +234,7 @@ def test_sign_up_user_calls_create_user_with_hashed_password(
 ):
     mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
     user_service.create_user = MagicMock()
-    user_for_sign_up = UserEmailAuthInSignUp(
+    user_for_sign_up = UserEmailAuthInSignUpAndIn(
         email="something@email.com", password="badpassword"
     )
     with patch("app.service.user_service.get_password_hash", return_value="hashed"):
@@ -250,6 +253,67 @@ def test_sign_up_user_returns_user_in_response_object(
         return_value=UserInDB(email="doesntmatter@email.com", id="1")
     )
     user_in_response = user_service.sign_up_user(
-        UserEmailAuthInSignUp(email="doesntmatter@email.com", password="badpassword")
+        UserEmailAuthInSignUpAndIn(
+            email="doesntmatter@email.com", password="badpassword"
+        )
     )
     assert isinstance(user_in_response, UserInResponse)
+
+
+def test_authenticate_email_password_raises_exception_when_user_not_found(
+    user_service, mock_user_data_access
+):
+    mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
+    user = UserEmailAuthInSignUpAndIn(
+        email="something@email.com", password="badpassword"
+    )
+    with pytest.raises(AuthenticationException):
+        user_service.authenticate_email_password_auth(user)
+
+
+def test_authenticate_email_password_raises_exception_when_user_sign_up_with_oauth(
+    user_service, mock_user_data_access
+):
+    mock_user_data_access.get_user_by_email = MagicMock(
+        return_value=UserInDB(
+            email="something@email.com", id="1", password_hash=None, provider="apple"
+        )
+    )
+    user = UserEmailAuthInSignUpAndIn(
+        email="something@email.com", password="badpassword"
+    )
+    with pytest.raises(AuthenticationException):
+        user_service.authenticate_email_password_auth(user)
+
+
+def test_authenticate_email_password_raises_exception_when_password_incorrect(
+    user_service, mock_user_data_access
+):
+    password_hash = get_password_hash("it wont match")
+    mock_user_data_access.get_user_by_email = MagicMock(
+        return_value=UserInDB(
+            email="something@email.com", id="1", password_hash=password_hash
+        )
+    )
+    user = UserEmailAuthInSignUpAndIn(
+        email="something@email.com", password="badpassword"
+    )
+    with pytest.raises(AuthenticationException):
+        user_service.authenticate_email_password_auth(user)
+
+
+def test_authenticate_email_password_returns_user_in_response_when_success(
+    user_service, mock_user_data_access
+):
+    password_hash = get_password_hash("it will match")
+    mock_user_data_access.get_user_by_email = MagicMock(
+        return_value=UserInDB(
+            email="something@email.com", id="1", password_hash=password_hash
+        )
+    )
+    user = UserEmailAuthInSignUpAndIn(
+        email="something@email.com", password="it will match"
+    )
+
+    result = user_service.authenticate_email_password_auth(user)
+    assert isinstance(result, UserInResponse)

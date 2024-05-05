@@ -3,7 +3,7 @@ from uuid import uuid4
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from jwt.exceptions import PyJWTError
 
-from app.auth.passwords import get_password_hash
+from app.auth.passwords import check_password, get_password_hash
 from app.auth.tokens import decode_and_verify_token, encode_jwt
 from app.data_access.user import UserDataAccess
 from app.exceptions import (
@@ -16,7 +16,7 @@ from app.models.auth_models import AuthRequest
 from app.models.user_models import (
     Preferences,
     UserEmailAuth,
-    UserEmailAuthInSignUp,
+    UserEmailAuthInSignUpAndIn,
     UserInDB,
     UserInResponse,
     UserOAuth,
@@ -72,13 +72,34 @@ class UserService:
             preferences=user_for_auth.preferences,
         )
 
-    def authenticate_email_password_auth(self):
+    def authenticate_email_password_auth(
+        self, user: UserEmailAuthInSignUpAndIn
+    ) -> UserInResponse:
         """
-        Authenticate a user
-        """
-        pass
+        Authenticate a user through email and password
 
-    def sign_up_user(self, user: UserEmailAuthInSignUp) -> UserInResponse:
+        :param user: The user to authenticate
+        :return: The authenticated user
+        :raises AuthenticationException: If the user doesnt exist or password is incorrect
+        or user previously signed up with oAuth provider
+        """
+        user_in_db = self.user_data_access.get_user_by_email(user.email)
+        if user_in_db is None:
+            raise AuthenticationException("Invalid email or password")
+        elif user_in_db.password_hash is None:
+            raise AuthenticationException(
+                f"Please sign in with {user_in_db.provider} to continue"
+            )
+        elif not check_password(user.password, user_in_db.password_hash):
+            raise AuthenticationException("Invalid email or password")
+
+        return UserInResponse(
+            id=user_in_db.id,
+            token=encode_jwt({"id": user_in_db.id, "email": user_in_db.email}),
+            preferences=user_in_db.preferences,
+        )
+
+    def sign_up_user(self, user: UserEmailAuthInSignUpAndIn) -> UserInResponse:
         if self.user_data_access.get_user_by_email(user.email) is not None:
             raise EntityAlreadyExistsException(
                 "An account already exists with this email. Sign in to continue"
@@ -89,7 +110,7 @@ class UserService:
         return UserInResponse(
             id=created_user.id,
             token=encode_jwt({"id": created_user.id, "email": created_user.email}),
-            preferences=created_user.preferences
+            preferences=created_user.preferences,
         )
 
     def create_user(self, user: UserOAuth | UserEmailAuth):
