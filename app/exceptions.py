@@ -30,3 +30,7 @@ class SetDoesNotExistException(Exception):
 
 class EntityNotFoundException(Exception):
     """The requested entity was not found"""
+
+
+class EntityAlreadyExistsException(Exception):
+    """The entity being created already exists"""
