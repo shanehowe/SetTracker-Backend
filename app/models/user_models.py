@@ -34,5 +34,5 @@ class UserEmailAuth(BaseUser):
     password_hash: str
 
 
-class UserEmailAuthInSignUp(BaseUser):
+class UserEmailAuthInSignUpAndIn(BaseUser):
     password: str
