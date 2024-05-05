@@ -3,15 +3,24 @@ from uuid import uuid4
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from jwt.exceptions import PyJWTError
 
+from app.auth.passwords import get_password_hash
 from app.auth.tokens import decode_and_verify_token, encode_jwt
 from app.data_access.user import UserDataAccess
 from app.exceptions import (
     AuthenticationException,
+    EntityAlreadyExistsException,
     EntityNotFoundException,
     UnsupportedProviderException,
 )
 from app.models.auth_models import AuthRequest
-from app.models.user_models import BaseUser, Preferences, UserInDB, UserInResponse
+from app.models.user_models import (
+    Preferences,
+    UserEmailAuth,
+    UserEmailAuthInSignUp,
+    UserInDB,
+    UserInResponse,
+    UserOAuth,
+)
 
 
 class UserService:
@@ -29,12 +38,12 @@ class UserService:
         except CosmosResourceNotFoundError:
             return None
 
-    def authenticate(self, auth_data: AuthRequest) -> UserInResponse:
+    def authenticate_oauth(self, auth_data: AuthRequest) -> UserInResponse:
         """
         Authenticate a user based on the auth data provided
 
         :param auth_data: The authentication data
-        :return: The authenticated user or None
+        :return: The authenticated user
         :raises AuthenticationException: If the authentication fails
         """
         try:
@@ -52,7 +61,7 @@ class UserService:
 
         user_for_auth = self.user_data_access.get_user_by_email(email_from_token)
         if user_for_auth is None:
-            user_to_create = BaseUser(
+            user_to_create = UserOAuth(
                 email=email_from_token, provider=auth_data.provider
             )
             user_for_auth = self.create_user(user_to_create)
@@ -63,14 +72,32 @@ class UserService:
             preferences=user_for_auth.preferences,
         )
 
-    def create_user(self, user: BaseUser):
+    def authenticate_email_password_auth(self):
+        """
+        Authenticate a user
+        """
+        pass
+
+    def sign_up_user(self, user: UserEmailAuthInSignUp) -> UserInResponse:
+        if self.user_data_access.get_user_by_email(user.email) is not None:
+            raise EntityAlreadyExistsException(
+                "An account already exists with this email. Sign in to continue"
+            )
+        hashed_password = get_password_hash(user.password)
+        user_to_create = UserEmailAuth(email=user.email, password_hash=hashed_password)
+        created_user = self.create_user(user_to_create)
+        return UserInResponse(
+            id=created_user.id,
+            token=encode_jwt({"id": created_user.id, "email": created_user.email}),
+            preferences=created_user.preferences
+        )
+
+    def create_user(self, user: UserOAuth | UserEmailAuth):
         user_id = str(uuid4())
         user_for_creation = UserInDB(**user.model_dump(), id=user_id)
         return self.user_data_access.create_user(user_for_creation)
 
-    def update_user_preferences(
-        self, preferences: Preferences, user_id: str
-    ) -> None:
+    def update_user_preferences(self, preferences: Preferences, user_id: str) -> None:
         """
         Update users preferences.
         :param updated_preferences: The preferences object with the data to update
