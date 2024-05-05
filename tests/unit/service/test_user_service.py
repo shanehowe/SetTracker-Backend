@@ -1,12 +1,23 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
 from app.data_access.user import UserDataAccess
-from app.exceptions import AuthenticationException, EntityNotFoundException
+from app.exceptions import (
+    AuthenticationException,
+    EntityAlreadyExistsException,
+    EntityNotFoundException,
+)
 from app.models.auth_models import AuthRequest
-from app.models.user_models import BaseUser, Preferences, UserInDB, UserInResponse
+from app.models.user_models import (
+    Preferences,
+    UserEmailAuth,
+    UserEmailAuthInSignUp,
+    UserInDB,
+    UserInResponse,
+    UserOAuth,
+)
 from app.service.user_service import UserService
 
 
@@ -49,7 +60,7 @@ def test_create_user(user_service, mock_user_data_access):
     mock_user_data_access.create_user = MagicMock(
         return_value=UserInDB(id="123", email="example@email.com", provider="apple")
     )
-    user_for_creation = BaseUser(email="example@email.com", provider="apple")
+    user_for_creation = UserOAuth(email="example@email.com", provider="apple")
     # Call the service method
     result = user_service.create_user(user_for_creation)
     assert isinstance(result, UserInDB)
@@ -66,7 +77,7 @@ def test_authenticate_raises_exception_when_given_invalid_provider(
 ):
     mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
     with pytest.raises(AuthenticationException, match="oAuth provider not supported"):
-        user_service.authenticate(
+        user_service.authenticate_oauth(
             AuthRequest(token="token", provider="invalid_provider")
         )
     assert not mock_user_data_access.get_user_by_email.called
@@ -81,7 +92,7 @@ def test_authenticate_raises_exception_when_given_invalid_token(
     )
 
     with pytest.raises(AuthenticationException, match="Unable to decode token"):
-        user_service.authenticate(AuthRequest(token="token", provider="apple"))
+        user_service.authenticate_oauth(AuthRequest(token="token", provider="apple"))
     assert not mock_user_data_access.get_user_by_email.called
 
 
@@ -95,7 +106,7 @@ def test_authenticate_raises_exception_when_token_data_doesnt_contain_email_fiel
     )
 
     with pytest.raises(AuthenticationException, match="Invalid token data"):
-        user_service.authenticate(AuthRequest(token="token", provider="apple"))
+        user_service.authenticate_oauth(AuthRequest(token="token", provider="apple"))
 
     assert not mock_user_data_access.get_user_by_email.called
 
@@ -116,7 +127,7 @@ def test_authenticate_calls_create_user_when_user_for_auth_doesnt_exist(
     )
     auth_request = AuthRequest(token="token", provider="apple")
 
-    user_service.authenticate(auth_request)
+    user_service.authenticate_oauth(auth_request)
 
     assert mock_user_data_access.create_user.called_once
 
@@ -136,7 +147,7 @@ def test_authenticate_returns_model_with_id__token_and_preferences_fields(
     )
     auth_request = AuthRequest(token="token", provider="apple")
 
-    result = user_service.authenticate(auth_request)
+    result = user_service.authenticate_oauth(auth_request)
     assert isinstance(result, UserInResponse)
     dumped_model = result.model_dump()
     assert dumped_model.get("id") is not None
@@ -191,3 +202,54 @@ def test_update_preferences_calls_data_access_method_with_updated_preferences(
     mock_user_data_access.update_user.assert_called_once_with(
         user_after_updating_preferences
     )
+
+
+def test_sign_up_user_raises_exception_when_account_exists_with_requested_email(
+    user_service, mock_user_data_access
+):
+    mock_user_data_access.get_user_by_email = MagicMock(
+        return_value=UserInDB(email="something@email.com", id="1")
+    )
+    with pytest.raises(EntityAlreadyExistsException):
+        user_service.sign_up_user(
+            UserEmailAuthInSignUp(email="something@email.com", password="badpassword")
+        )
+
+
+def test_sign_up_user_hashes_plain_text_password(user_service, mock_user_data_access):
+    mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
+    user_for_sign_up = UserEmailAuthInSignUp(
+        email="something@email.com", password="badpassword"
+    )
+    with patch("app.service.user_service.get_password_hash") as mocked_pwrd_hash:
+        user_service.sign_up_user(user_for_sign_up)
+        mocked_pwrd_hash.assert_called_once_with(user_for_sign_up.password)
+
+
+def test_sign_up_user_calls_create_user_with_hashed_password(
+    user_service, mock_user_data_access
+):
+    mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
+    user_service.create_user = MagicMock()
+    user_for_sign_up = UserEmailAuthInSignUp(
+        email="something@email.com", password="badpassword"
+    )
+    with patch("app.service.user_service.get_password_hash", return_value="hashed"):
+        user_service.sign_up_user(user_for_sign_up)
+        args = user_service.create_user.call_args
+        user_that_was_created = args[0][0]
+        assert isinstance(user_that_was_created, UserEmailAuth)
+        assert user_that_was_created.password_hash == "hashed"
+
+
+def test_sign_up_user_returns_user_in_response_object(
+    user_service, mock_user_data_access
+):
+    mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
+    user_service.create_user = MagicMock(
+        return_value=UserInDB(email="doesntmatter@email.com", id="1")
+    )
+    user_in_response = user_service.sign_up_user(
+        UserEmailAuthInSignUp(email="doesntmatter@email.com", password="badpassword")
+    )
+    assert isinstance(user_in_response, UserInResponse)
