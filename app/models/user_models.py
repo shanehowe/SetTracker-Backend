@@ -32,3 +32,7 @@ class UserOAuth(BaseUser):
 
 class UserEmailAuth(BaseUser):
     password_hash: str
+
+
+class UserEmailAuthInSignUp(BaseUser):
+    password: str
