@@ -80,7 +80,7 @@ payload = {"email" : "doesnotmatter@email.com", "id": "f4ed09fc-ee99-43e0-8b19-1
 
 jwt.encode(payload, "GenerateRandomSecret", algorithm="HS256")
 ```
-Now you have your bearer token to make requests to the backend.
+Now you have your bearer token to make requests to the backend. Make sure to add it to the header fields of each request.
 
 - In your web browser navigate to ```http://localhost:7071/docs```. Here you will find the routes and HTTP methods for making requests.
 
