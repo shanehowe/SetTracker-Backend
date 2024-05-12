@@ -224,7 +224,11 @@ def test_sign_up_user_hashes_plain_text_password(user_service, mock_user_data_ac
     user_for_sign_up = UserEmailAuthInSignUpAndIn(
         email="something@email.com", password="badpassword"
     )
+    user_service.create_user = MagicMock(
+        return_value=UserInDB(email="doesntmatter@email.com", id="1")
+    )
     with patch("app.service.user_service.get_password_hash") as mocked_pwrd_hash:
+        mocked_pwrd_hash.return_value = "hashed"
         user_service.sign_up_user(user_for_sign_up)
         mocked_pwrd_hash.assert_called_once_with(user_for_sign_up.password)
 
@@ -233,7 +237,9 @@ def test_sign_up_user_calls_create_user_with_hashed_password(
     user_service, mock_user_data_access
 ):
     mock_user_data_access.get_user_by_email = MagicMock(return_value=None)
-    user_service.create_user = MagicMock()
+    user_service.create_user = MagicMock(
+        return_value=UserInDB(email="doesntmatter@email.com", id="1")
+    )
     user_for_sign_up = UserEmailAuthInSignUpAndIn(
         email="something@email.com", password="badpassword"
     )
