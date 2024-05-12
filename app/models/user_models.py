@@ -1,8 +1,9 @@
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import EmailStr
+from pydantic import BeforeValidator, EmailStr
 
 from app.models.base_model import CustomBaseModel
+from app.utils.string_utils import strip_and_lower
 
 
 class Preferences(CustomBaseModel):
@@ -10,7 +11,7 @@ class Preferences(CustomBaseModel):
 
 
 class BaseUser(CustomBaseModel):
-    email: EmailStr
+    email: Annotated[EmailStr, BeforeValidator(strip_and_lower)]
 
 
 class UserInDB(BaseUser):
