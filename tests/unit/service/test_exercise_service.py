@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 
-from app.exceptions import ExerciseAlreadyExistsException
+from app.exceptions import EntityAlreadyExistsException
 from app.models.exercises_models import ExerciseInCreate, ExerciseInDB
 from app.service.exercise_service import ExerciseService
 
@@ -57,7 +57,7 @@ def test_create_custom_exercise_raises_exception_when_exercise_exists(
             id="1", name="some name", body_parts=[], creator="system"
         )
     )
-    with pytest.raises(ExerciseAlreadyExistsException):
+    with pytest.raises(EntityAlreadyExistsException):
         exercise_service.create_custom_exercise(
             ExerciseInCreate(name="some name"), "12"
         )

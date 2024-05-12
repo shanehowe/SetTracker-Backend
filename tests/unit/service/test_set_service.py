@@ -3,12 +3,7 @@ from unittest.mock import MagicMock
 import pytest
 from azure.cosmos.exceptions import CosmosHttpResponseError, CosmosResourceNotFoundError
 
-from app.exceptions import (
-    ExerciseDoesNotExistException,
-    SetDoesNotExistException,
-    UnauthorizedAccessException,
-    UserDoesNotExistException,
-)
+from app.exceptions import EntityNotFoundException, UnauthorizedAccessException
 from app.models.exercises_models import ExerciseInDB
 from app.models.set_models import SetInCreate, SetInDB
 from app.models.user_models import UserInDB
@@ -67,7 +62,7 @@ def test_create_set_raises_exception_when_user_doesnt_exist(
 ):
     mock_user_service.get_user_by_id = MagicMock(return_value=None)
     set_service.user_service = mock_user_service
-    with pytest.raises(UserDoesNotExistException):
+    with pytest.raises(EntityNotFoundException):
         set_to_create = SetInCreate(exercise_id="1", reps=10, weight=100)
         set_service.create_set(set_to_create, "2")
     mock_user_service.get_user_by_id.assert_called_once_with("2")
@@ -79,13 +74,13 @@ def test_create_set_raises_exception_when_exercise_doesnt_exist(
     # Just so we don't raise an exception for user not existing
     mock_user_service.get_user_by_id = MagicMock(return_value="user")
     mock_exercise_service.get_exercise_by_id = MagicMock(
-        side_effect=ExerciseDoesNotExistException()
+        side_effect=EntityNotFoundException()
     )
     # We need to set the exercise service to the mock exercise service
     # and the user service to the mock user service
     set_service.exercise_service = mock_exercise_service
     set_service.user_service = mock_user_service
-    with pytest.raises(ExerciseDoesNotExistException):
+    with pytest.raises(EntityNotFoundException):
         set_to_create = SetInCreate(exercise_id="1", reps=10, weight=100)
         set_service.create_set(set_to_create, "2")
     mock_user_service.get_user_by_id.assert_called_once_with("2")
@@ -124,7 +119,7 @@ def test_create_set_creates_set(
 def test_delete_set_raises_exception_when_set_does_not_exist(set_service):
     set_service.get_set_by_id = MagicMock(return_value=None)
 
-    with pytest.raises(SetDoesNotExistException):
+    with pytest.raises(EntityNotFoundException):
         set_service.delete_set("1", "1")
 
 

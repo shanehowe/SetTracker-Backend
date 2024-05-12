@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.dependencies import get_current_user
-from app.exceptions import ExerciseAlreadyExistsException
+from app.exceptions import EntityAlreadyExistsException
 from app.models.exercises_models import ExerciseInCreate
 from app.service.exercise_service import ExerciseService, get_exercise_service
 
@@ -26,5 +26,5 @@ def create_custom_exercise(
 ):
     try:
         return exercise_service.create_custom_exercise(exercise, decoded_token["id"])
-    except ExerciseAlreadyExistsException as e:
+    except EntityAlreadyExistsException as e:
         raise HTTPException(detail=str(e), status_code=status.HTTP_400_BAD_REQUEST)
