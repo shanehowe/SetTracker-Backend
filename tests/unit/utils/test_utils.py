@@ -1,22 +1,9 @@
-from app.utils.utils import to_camel
-from app.utils.date_utils import add_days_to_date
-import pytest
 import datetime
 
+import pytest
 
-@pytest.mark.parametrize(
-    "test_input, expected",
-    [
-        ("hello_world", "helloWorld"),
-        ("hello", "hello"),
-        ("hello_world_", "helloWorld"),
-        ("hello_world__", "helloWorld"),
-        ("hello_world__this", "helloWorldThis"),
-        ("", "")
-    ],
-)
-def test_to_camel(test_input, expected):
-    assert to_camel(test_input) == expected
+from app.utils.date_utils import add_days_to_date
+from app.utils.string_utils import strip_and_lower
 
 
 @pytest.mark.parametrize(
@@ -30,3 +17,16 @@ def test_to_camel(test_input, expected):
 )
 def test_add_days_to_date(test_input, days, expected):
     assert add_days_to_date(test_input, days) == expected
+
+
+@pytest.mark.parametrize(
+    "test_input, expected",
+    [
+        ("  L ", "l"),
+        ("I DONT KNOW", "i dont know"),
+        ("  I DONT KNOW  ", "i dont know"),
+        ("i dont know", "i dont know"),
+    ],
+)
+def test_strip_and_lower(test_input, expected):
+    assert strip_and_lower(test_input) == expected
