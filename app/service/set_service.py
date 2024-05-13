@@ -23,12 +23,31 @@ class SetService:
         self.user_service = user_service
 
     def get_set_by_id(self, set_id: str):
+        """
+        Retrieves a set by its ID.
+
+        Args:
+            set_id (str): The ID of the set to retrieve.
+
+        Returns:
+            dict or None: The set object if found, None otherwise.
+        """
         try:
             return self.set_data_access.get_set_by_id(set_id)
         except CosmosResourceNotFoundError:
             return None
 
     def get_users_sets_by_exercise_id(self, exercise_id: str, user_id: str):
+        """
+        Retrieves sets for a specific exercise and user, groups them by date, and returns the sorted set history.
+
+        Args:
+            exercise_id (str): The ID of the exercise.
+            user_id (str): The ID of the user.
+
+        Returns:
+            list: The sorted set history, grouped by date.
+        """
         retrieved_sets = self.set_data_access.get_users_sets_by_exercise_id(
             exercise_id=exercise_id, user_id=user_id
         )
@@ -37,11 +56,17 @@ class SetService:
 
     def create_set(self, set_in_create: SetInCreate, user_id: str):
         """
-        Create a new set
-        :param set_in_create: The set to create
-        :param user_id: The ID of the user creating the set
-        :return: The created set
-        :raises EntityNotFoundException: If the user or exercise does not exist
+        Creates a new set for a user.
+
+        Args:
+            set_in_create (SetInCreate): The set details to create.
+            user_id (str): The ID of the user.
+
+        Returns:
+            SetInDB: The created set.
+
+        Raises:
+            EntityNotFoundException: If the user or exercise does not exist.
         """
         if self.user_service.get_user_by_id(user_id) is None:
             raise EntityNotFoundException(f"User with ID {user_id} does not exist")
@@ -62,14 +87,18 @@ class SetService:
 
     def delete_set(self, set_id: str, user_id: str):
         """
-        Deletes a set with the given set_id if it exists and belongs to the specified user.
+        Deletes a set with the given set_id if it exists and the user_id matches the creator's user_id.
 
-        :param set_id (str): The ID of the set to be deleted.
-        :param user_id (str): The ID of the user who owns the set.
+        Args:
+            set_id (str): The ID of the set to delete.
+            user_id (str): The ID of the user attempting to delete the set.
 
-        :returns bool: True if the set is successfully deleted, False otherwise.
+        Returns:
+            bool: True if the set was successfully deleted, False otherwise.
 
-        :raises EntityNotFoundException: If the set does not exist.
+        Raises:
+            EntityNotFoundException: If the set with the given set_id does not exist.
+            UnauthorizedAccessException: If the user attempting to delete the set is not the creator.
         """
         set_to_delete = self.get_set_by_id(set_id)
         if set_to_delete is None:

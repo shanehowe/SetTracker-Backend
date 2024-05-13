@@ -5,6 +5,18 @@ from app.auth.tokens import decode_jwt
 
 
 def extract_token(request: Request) -> str:
+    """
+    Extracts the token from the request headers.
+
+    Args:
+        request (Request): The incoming request object.
+
+    Returns:
+        str: The extracted token.
+
+    Raises:
+        HTTPException: If the token is missing or has an invalid authorization scheme.
+    """
     token = request.headers.get("Authorization")
 
     if not token:
@@ -22,6 +34,18 @@ def extract_token(request: Request) -> str:
 
 
 def get_current_user(token: str = Depends(extract_token)) -> dict:
+    """
+    Retrieves the current user based on the provided token.
+
+    Args:
+        token (str): The JWT token used for authentication.
+
+    Returns:
+        dict: The payload of the decoded JWT token, representing the current user.
+
+    Raises:
+        HTTPException: If the token has expired or could not be decoded, or if the token payload is invalid.
+    """
     try:
         payload = decode_jwt(token)
     except ExpiredSignatureError:

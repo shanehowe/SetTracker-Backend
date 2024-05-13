@@ -19,6 +19,19 @@ class WorkoutFolderService:
         self.workout_folder_data_access = workout_folder_data_access
 
     def get_folder_by_id(self, folder_id: str, user_requesting_folder: str):
+        """
+        Retrieves a workout folder by its ID.
+
+        Args:
+            folder_id (str): The ID of the folder to retrieve.
+            user_requesting_folder (str): The ID of the user requesting the folder.
+
+        Returns:
+            WorkoutFolder: The retrieved workout folder.
+
+        Raises:
+            UnauthorizedAccessException: If the folder does not belong to the user.
+        """
         try:
             retrieved_folder = self.workout_folder_data_access.get_folder_by_id(
                 folder_id
@@ -30,9 +43,28 @@ class WorkoutFolderService:
         return retrieved_folder
 
     def get_users_workout_folders(self, user_id: str) -> list[WorkoutFolderInDB]:
+        """
+        Retrieves the workout folders for a specific user.
+
+        Args:
+            user_id (str): The ID of the user.
+
+        Returns:
+            list[WorkoutFolderInDB]: A list of workout folders associated with the user.
+        """
         return self.workout_folder_data_access.get_users_workout_folders(user_id)
 
     def create_workout_folder(self, folder: WorkoutFolderInRequest, user_id: str):
+        """
+        Creates a new workout folder.
+
+        Args:
+            folder (WorkoutFolderInRequest): The workout folder to be created.
+            user_id (str): The ID of the user creating the folder.
+
+        Returns:
+            WorkoutFolderInDB: The created workout folder.
+        """
         if folder.exercises is None:
             folder.exercises = []
         folder_id = str(uuid4())
@@ -46,6 +78,21 @@ class WorkoutFolderService:
     def update_workout_folder(
         self, folder_id: str, data_to_update: WorkoutFolderInUpdate, user_id: str
     ):
+        """
+        Updates a workout folder with the provided data.
+
+        Args:
+            folder_id (str): The ID of the folder to update.
+            data_to_update (WorkoutFolderInUpdate): The data to update the folder with.
+            user_id (str): The ID of the user performing the update.
+
+        Returns:
+            WorkoutFolder: The updated workout folder.
+
+        Raises:
+            ValueError: If neither the folder name nor the exercises are provided.
+            UnauthorizedAccessException: If the folder does not belong to the user.
+        """
         if data_to_update.name is None and data_to_update.exercises is None:
             raise ValueError(
                 "Folder name or exercises must be provided to update folder"
@@ -69,11 +116,17 @@ class WorkoutFolderService:
 
     def delete_workout_folder(self, folder_id: str, user_id: str):
         """
-        :param folder_id: The id of the folder that is to be deleted
-        :param user_id: The id of the user that is requesting the folder to be deleted
-        :returns: True if operation was successful, False if not
-        :raises ValueError: When the id does not belong to an existing folder
-        :raises UnauthorizedAccessException: When the user does not own the folder
+        Deletes a workout folder with the specified folder_id for the given user_id.
+
+        Args:
+            folder_id (str): The ID of the folder to delete.
+            user_id (str): The ID of the user who owns the folder.
+
+        Returns:
+            bool: True if the folder was successfully deleted, False otherwise.
+
+        Raises:
+            ValueError: If the folder with the requested ID does not exist.
         """
         folder_to_delete = self.get_folder_by_id(folder_id, user_id)
         if folder_to_delete is None:

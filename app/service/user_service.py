@@ -29,9 +29,13 @@ class UserService:
 
     def get_user_by_id(self, user_id: str) -> UserInDB | None:
         """
-        Get a user by their ID
-        :param user_id: The ID of the user
-        :return: The user or None if not found
+        Retrieve a user from the database by their ID.
+
+        Args:
+            user_id (str): The ID of the user to retrieve.
+
+        Returns:
+            UserInDB | None: The user object if found, None otherwise.
         """
         try:
             return self.user_data_access.get_user_by_id(user_id)
@@ -40,11 +44,17 @@ class UserService:
 
     def authenticate_oauth(self, auth_data: AuthRequest) -> UserInResponse:
         """
-        Authenticate a user based on the auth data provided
+        Authenticates a user using OAuth.
 
-        :param auth_data: The authentication data
-        :return: The authenticated user
-        :raises AuthenticationException: If the authentication fails
+        Args:
+            auth_data (AuthRequest): The authentication request data.
+
+        Returns:
+            UserInResponse: The user information response.
+
+        Raises:
+            AuthenticationException: If the OAuth provider is not supported,
+                the token cannot be decoded, or the token data is invalid.
         """
         try:
             decoded_provider_token = decode_and_verify_token(
@@ -76,12 +86,16 @@ class UserService:
         self, user: UserEmailAuthInSignUpAndIn
     ) -> UserInResponse:
         """
-        Authenticate a user through email and password
+        Authenticates a user using email and password.
 
-        :param user: The user to authenticate
-        :return: The authenticated user
-        :raises AuthenticationException: If the user doesnt exist or password is incorrect
-        or user previously signed up with oAuth provider
+        Args:
+            user (UserEmailAuthInSignUpAndIn): The user object containing email and password.
+
+        Returns:
+            UserInResponse: The user response object containing user information and token.
+
+        Raises:
+            AuthenticationException: If the email or password is invalid, or if the user is not signed in with the correct provider.
         """
         user_in_db = self.user_data_access.get_user_by_email(user.email)
         if user_in_db is None:
@@ -100,6 +114,18 @@ class UserService:
         )
 
     def sign_up_user(self, user: UserEmailAuthInSignUpAndIn) -> UserInResponse:
+        """
+        Signs up a new user with the provided email and password.
+
+        Args:
+            user (UserEmailAuthInSignUpAndIn): The user object containing the email and password.
+
+        Returns:
+            UserInResponse: The response object containing the created user's information.
+
+        Raises:
+            EntityAlreadyExistsException: If an account already exists with the provided email.
+        """
         if self.user_data_access.get_user_by_email(user.email) is not None:
             raise EntityAlreadyExistsException(
                 "An account already exists with this email. Sign in to continue"
@@ -114,16 +140,33 @@ class UserService:
         )
 
     def create_user(self, user: UserOAuth | UserEmailAuth):
+        """
+        Creates a new user.
+
+        Args:
+            user (UserOAuth | UserEmailAuth): The user object containing the user information.
+
+        Returns:
+            User: The created user object.
+
+        """
         user_id = str(uuid4())
         user_for_creation = UserInDB(**user.model_dump(), id=user_id)
         return self.user_data_access.create_user(user_for_creation)
 
     def update_user_preferences(self, preferences: Preferences, user_id: str) -> None:
         """
-        Update users preferences.
-        :param updated_preferences: The preferences object with the data to update
-        :param user_id: The ID of the user to preform the operation on.
-        :raises EntityNotFoundException: The user_id does not belong to an existing user.
+        Updates the preferences of a user with the given user ID.
+
+        Args:
+            preferences (Preferences): The new preferences to be updated.
+            user_id (str): The ID of the user to update.
+
+        Raises:
+            EntityNotFoundException: If no user with the given user ID is found.
+
+        Returns:
+            None
         """
         user_to_update = self.get_user_by_id(user_id)
         if user_to_update is None:
