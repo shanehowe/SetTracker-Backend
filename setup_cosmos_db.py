@@ -16,8 +16,12 @@ from azure.cosmos import PartitionKey
 #    https://pypi.python.org/pypi/azure-cosmos/
 # ----------------------------------------------------------------------------------------------------------
 
-DB_HOST = os.environ["DB_HOST"]
-DB_KEY = os.environ["DB_KEY"]
+try:
+    DB_HOST = os.environ["DB_HOST"]
+    DB_KEY = os.environ["DB_KEY"]
+except KeyError:
+    sys.exit("Cosmos DB credentials not set")
+
 DATABASE_ID = "set-tracker-db"
 
 try:
@@ -26,16 +30,14 @@ try:
     db = client.get_database_client(DATABASE_ID)
 
     containers_to_create = [
-        {"id": "users", "partition_key": PartitionKey(path="/id")},
-        {"id": "exercise-sets", "partition_key": PartitionKey(path="/id")},
-        {"id": "exercises", "partition_key": PartitionKey(path="/id")},
-        {"id": "workout-folders", "partition_key": PartitionKey(path="/id")},
+        "users",
+        "exercise-sets",
+        "exercises",
+        "workout-folders",
     ]
 
-    for container_data in containers_to_create:
-        db.create_container(
-            id=container_data["id"], partition_key=container_data["partition_key"]
-        )
+    for container_id in containers_to_create:
+        db.create_container(id=container_id, partition_key=PartitionKey(path="/id"))
 
     # Seed the database with a user
     user = {
@@ -51,49 +53,41 @@ try:
     # but this is more than enough to let you see the funcitonality of the app
     exercises = [
         {
-            "id": str(uuid.uuid4()),
             "name": "Bench Press",
             "body_parts": ["Chest", "Triceps", "Shoulders"],
             "creator": "system",
         },
         {
-            "id": str(uuid.uuid4()),
             "name": "Squat",
             "body_parts": ["Quads", "Glutes", "Hamstrings"],
             "creator": "system",
         },
         {
-            "id": str(uuid.uuid4()),
             "name": "Deadlift",
             "body_parts": ["Back", "Glutes", "Hamstrings"],
             "creator": "system",
         },
         {
-            "id": str(uuid.uuid4()),
             "name": "Overhead Press",
             "body_parts": ["Shoulders", "Triceps"],
             "creator": "system",
         },
         {
-            "id": str(uuid.uuid4()),
             "name": "Pull Up",
             "body_parts": ["Back", "Biceps"],
             "creator": "system",
         },
         {
-            "id": str(uuid.uuid4()),
             "name": "Dumbbell Curl",
             "body_parts": ["Biceps", "Forearms"],
             "creator": "system",
         },
         {
-            "id": str(uuid.uuid4()),
             "name": "Tricep Extension",
             "body_parts": ["Triceps"],
             "creator": "system",
         },
         {
-            "id": str(uuid.uuid4()),
             "name": "Leg Press",
             "body_parts": ["Quads", "Glutes", "Hamstrings"],
             "creator": "system",
@@ -101,6 +95,7 @@ try:
     ]
     container_client = db.get_container_client("exercises")
     for exercise in exercises:
+        exercise["id"] = str(uuid.uuid4())
         container_client.create_item(body=exercise)
 except exceptions.CosmosHttpResponseError as e:
     sys.exit(f"Setting up database failed\n{str(e.message)}")
