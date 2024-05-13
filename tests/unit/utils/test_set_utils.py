@@ -1,10 +1,10 @@
 import pytest
 
 from app.models.set_models import SetGroup, SetInDB
-from app.utils.set_utils import group_sets_by_date
+from app.utils.set_utils import group_sets_by_date, sorted_set_history
 
 # This looks crazy long, but its just how black formats it
-test_data = [
+group_sets_test_data = [
     (
         [
             SetInDB(
@@ -107,10 +107,150 @@ test_data = [
         ],
     ),
     ([], []),
-    
 ]
 
 
-@pytest.mark.parametrize("sets, expected", test_data)
+@pytest.mark.parametrize("sets, expected", group_sets_test_data)
 def test_group_sets_by_date(sets, expected):
     assert group_sets_by_date(sets) == expected
+
+
+data = [
+    (
+        [
+            SetGroup(
+                sets=[
+                    SetInDB(
+                        id="3",
+                        date_created="2023-05-11T14:30:00",
+                        user_id="2",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                    SetInDB(
+                        id="4",
+                        date_created="2023-05-11T09:15:00",
+                        user_id="2",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                ],
+                date_created="2023-05-11T12:00:00",
+            ),
+            SetGroup(
+                sets=[
+                    SetInDB(
+                        id="1",
+                        date_created="2023-05-12T11:00:00",
+                        user_id="1",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                    SetInDB(
+                        id="2",
+                        date_created="2023-05-12T10:30:00",
+                        user_id="1",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                ],
+                date_created="2023-05-12T11:00:00",
+            ),
+            SetGroup(
+                sets=[
+                    SetInDB(
+                        id="5",
+                        date_created="2023-05-14T08:20:00",
+                        user_id="3",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                    SetInDB(
+                        id="6",
+                        date_created="2023-05-14T16:45:00",
+                        user_id="3",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                ],
+                date_created="2023-05-14T10:00:00",
+            ),
+        ],
+        [
+            SetGroup(
+                sets=[
+                    SetInDB(
+                        id="6",
+                        date_created="2023-05-14T16:45:00",
+                        user_id="3",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                    SetInDB(
+                        id="5",
+                        date_created="2023-05-14T08:20:00",
+                        user_id="3",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                ],
+                date_created="2023-05-14T10:00:00",
+            ),
+            SetGroup(
+                sets=[
+                    SetInDB(
+                        id="1",
+                        date_created="2023-05-12T11:00:00",
+                        user_id="1",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                    SetInDB(
+                        id="2",
+                        date_created="2023-05-12T10:30:00",
+                        user_id="1",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                ],
+                date_created="2023-05-12T11:00:00",
+            ),
+            SetGroup(
+                sets=[
+                    SetInDB(
+                        id="3",
+                        date_created="2023-05-11T14:30:00",
+                        user_id="2",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                    SetInDB(
+                        id="4",
+                        date_created="2023-05-11T09:15:00",
+                        user_id="2",
+                        exercise_id="1",
+                        reps=1,
+                        weight=2,
+                    ),
+                ],
+                date_created="2023-05-11T12:00:00",
+            ),
+        ],
+    )
+]
+
+
+@pytest.mark.parametrize("set_history, expected", data)
+def test_sorted_set_history(set_history, expected):
+    assert sorted_set_history(set_history) == expected
