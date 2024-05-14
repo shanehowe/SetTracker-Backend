@@ -36,4 +36,4 @@ class UserEmailAuth(BaseUser):
 
 
 class UserEmailAuthInSignUpAndIn(BaseUser):
-    password: str = Field(..., min_length=8)
+    password: str = Field(..., min_length=6)
