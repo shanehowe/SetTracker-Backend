@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -21,13 +23,17 @@ def client():
 
 
 @pytest.fixture
-def created_user():
+def user_data_access():
+    return UserDataAccess()
+
+
+@pytest.fixture
+def created_user(user_data_access: UserDataAccess):
     user = UserInDB(
-        id="1",
+        id=str(uuid.uuid4()),
         email="someone@email.com",
         password_hash=get_password_hash("valid_password"),
     )
-    user_data_access = UserDataAccess()
     created = user_data_access.create_user(user)
     CLEAN_UP_IDS.append(created.id)
     return created
@@ -44,7 +50,7 @@ def test_sign_up_with_invalid_credentials(client: TestClient):
     assert json_response["detail"][1]["loc"] == ["body", "password"]
 
 
-def test_sign_up_with_valid_credentials(client: TestClient):
+def test_sign_up_with_valid_credentials(client: TestClient, user_data_access: UserDataAccess):
     response = client.post(
         "/auth/signup",
         json={"email": "valid@email.com", "password": "valid_password"},
@@ -55,6 +61,11 @@ def test_sign_up_with_valid_credentials(client: TestClient):
     assert json_response["preferences"]
     assert json_response["token"]
     CLEAN_UP_IDS.append(json_response["id"])
+
+    # User was actually created
+    user = user_data_access.get_user_by_id(json_response["id"])
+    assert user.id == json_response["id"]
+    assert user.password_hash != "valid_password"
 
 
 def test_sign_in_with_invalid_credentials(client):
