@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 
-from pydantic import BeforeValidator, EmailStr
+from pydantic import BeforeValidator, EmailStr, Field
 
 from app.models.base_model import CustomBaseModel
 from app.utils.string_utils import strip_and_lower
@@ -36,4 +36,4 @@ class UserEmailAuth(BaseUser):
 
 
 class UserEmailAuthInSignUpAndIn(BaseUser):
-    password: str
+    password: str = Field(..., min_length=8)
