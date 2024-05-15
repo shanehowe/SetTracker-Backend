@@ -46,8 +46,8 @@ def test_sign_up_with_invalid_credentials(client: TestClient):
     )
     assert response.status_code == 422
     json_response = response.json()
-    assert json_response["detail"][0]["loc"] == ["body", "email"]
-    assert json_response["detail"][1]["loc"] == ["body", "password"]
+    assert json_response["detail"][0].startswith("email")
+    assert json_response["detail"][1].startswith("password")
 
 
 def test_sign_up_with_valid_credentials(client: TestClient, user_data_access: UserDataAccess):
@@ -75,9 +75,8 @@ def test_sign_in_with_invalid_credentials(client):
     )
     assert response.status_code == 422
     json_response = response.json()
-    assert json_response["detail"][0]["loc"] == ["body", "email"]
-    assert json_response["detail"][1]["loc"] == ["body", "password"]
-
+    assert json_response["detail"][0].startswith("email")
+    assert json_response["detail"][1].startswith("password")
 
 def test_sign_in_with_valid_credentials(client: TestClient, created_user: UserInDB):
     response = client.post(
