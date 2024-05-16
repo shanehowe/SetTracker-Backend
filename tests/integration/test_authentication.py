@@ -5,8 +5,8 @@ from fastapi.testclient import TestClient
 
 from app.auth.passwords import get_password_hash
 from app.data_access.user import UserDataAccess
-from app.main import fast_app
 from app.models.user_models import UserInDB
+from tests.integration.helpers import client
 
 CLEAN_UP_IDS = []
 
@@ -15,11 +15,6 @@ def teardown_module():
     user_data_access = UserDataAccess()
     for user_id in CLEAN_UP_IDS:
         user_data_access.delete_user(user_id)
-
-
-@pytest.fixture
-def client():
-    yield TestClient(fast_app)
 
 
 @pytest.fixture
@@ -50,7 +45,9 @@ def test_sign_up_with_invalid_credentials(client: TestClient):
     assert json_response["detail"][1].startswith("password")
 
 
-def test_sign_up_with_valid_credentials(client: TestClient, user_data_access: UserDataAccess):
+def test_sign_up_with_valid_credentials(
+    client: TestClient, user_data_access: UserDataAccess
+):
     response = client.post(
         "/auth/signup",
         json={"email": "valid@email.com", "password": "valid_password"},
@@ -77,6 +74,7 @@ def test_sign_in_with_invalid_credentials(client):
     json_response = response.json()
     assert json_response["detail"][0].startswith("email")
     assert json_response["detail"][1].startswith("password")
+
 
 def test_sign_in_with_valid_credentials(client: TestClient, created_user: UserInDB):
     response = client.post(
