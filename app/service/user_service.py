@@ -170,7 +170,7 @@ class UserService:
         """
         user_to_update = self.get_user_by_id(user_id)
         if user_to_update is None:
-            raise EntityNotFoundException(f"No user with ID: {user_id}")
+            raise EntityNotFoundException("User not found")
         # Get the current preferences
         # add the current preferences into the ones to be updated
         # if its not already in there.
