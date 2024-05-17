@@ -30,8 +30,8 @@ def created_user(user_data_access: UserDataAccess):
         password_hash=get_password_hash("valid_password"),
     )
     created = user_data_access.create_user(user)
-    CLEAN_UP_IDS.append(created.id)
-    return created
+    yield created
+    user_data_access.delete_user(created.id)
 
 
 def test_sign_up_with_invalid_credentials(client: TestClient):
