@@ -1,7 +1,9 @@
-from tests.integration.helpers import client, logged_in_client, user_data_access
+from fastapi.testclient import TestClient
+
+from app.data_access.user import UserDataAccess
 
 
-def test_update_preferences_with_bad_key(logged_in_client):
+def test_update_preferences_with_bad_key(logged_in_client: TestClient):
     """
     Test that updating preferences with a bad key returns a 422 response.
     Pydantic will validate the request body and FastAPI will return a 422 response if the request body is invalid.
@@ -11,7 +13,7 @@ def test_update_preferences_with_bad_key(logged_in_client):
     assert response.json() == {"detail": ["theme: required"]}
 
 
-def test_update_preferences_with_bad_value(logged_in_client):
+def test_update_preferences_with_bad_value(logged_in_client: TestClient):
     """
     Test that updating preferences with a bad value returns a 422 response.
     Pydantic will validate the request body and FastAPI will return a 422 response if the request body is invalid.
@@ -23,7 +25,9 @@ def test_update_preferences_with_bad_value(logged_in_client):
     }
 
 
-def test_update_preferences(logged_in_client, user_data_access):
+def test_update_preferences(
+    logged_in_client: TestClient, user_data_access: UserDataAccess
+):
     """
     Test that updating preferences with a valid token and request body returns a 204 response.
     Validate that the user's preferences have been updated in the database.
@@ -35,7 +39,7 @@ def test_update_preferences(logged_in_client, user_data_access):
 
 
 def test_update_preferences_with_deleted_user_but_valid_token(
-    logged_in_client, user_data_access
+    logged_in_client: TestClient, user_data_access: UserDataAccess
 ):
     """
     Test that updating preferences with a valid token and request body returns a 404 response.

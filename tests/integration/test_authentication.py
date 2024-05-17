@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 from app.auth.passwords import get_password_hash
 from app.data_access.user import UserDataAccess
 from app.models.user_models import UserInDB
-from tests.integration.helpers import client
 
 CLEAN_UP_IDS = []
 
@@ -65,7 +64,7 @@ def test_sign_up_with_valid_credentials(
     assert user.password_hash != "valid_password"
 
 
-def test_sign_in_with_invalid_credentials(client):
+def test_sign_in_with_invalid_credentials(client: TestClient):
     response = client.post(
         "/auth/signin",
         json={"email": "bad_email", "password": "1"},

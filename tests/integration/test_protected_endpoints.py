@@ -5,7 +5,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.auth.tokens import SECRET
-from tests.integration.helpers import client, logged_in_client, user_data_access
 
 GET_ENDPOINTS = [
     "/workout-folders/",
