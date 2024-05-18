@@ -1,11 +1,10 @@
-import uuid
-
 import pytest
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from fastapi.testclient import TestClient
 
 from app.auth.passwords import get_password_hash
 from app.data_access.user import UserDataAccess
+from app.data_access.workout_folder import WorkoutFolderDataAccess
 from app.main import fast_app
 from app.models.user_models import UserInDB
 
@@ -21,12 +20,23 @@ def user_data_access():
 
 
 @pytest.fixture
-def logged_in_client(client: TestClient, user_data_access: UserDataAccess):
-    user = UserInDB(
-        id=str(uuid.uuid4()),
+def workout_folder_data_access():
+    return WorkoutFolderDataAccess()
+
+
+@pytest.fixture
+def user():
+    return UserInDB(
+        id="1",
         email="test@test.com",
         password_hash=get_password_hash("password"),
     )
+
+
+@pytest.fixture
+def logged_in_client(
+    client: TestClient, user_data_access: UserDataAccess, user: UserInDB
+):
     user_data_access.create_user(user)
     response = client.post(
         "/auth/signin",
