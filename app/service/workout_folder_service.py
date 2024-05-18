@@ -39,7 +39,7 @@ class WorkoutFolderService:
         except CosmosResourceNotFoundError:
             return None
         if retrieved_folder.user_id != user_requesting_folder:
-            raise UnauthorizedAccessException("This folder does not belong to the user")
+            raise UnauthorizedAccessException("You do not have access to this folder")
         return retrieved_folder
 
     def get_users_workout_folders(self, user_id: str) -> list[WorkoutFolderInDB]:
