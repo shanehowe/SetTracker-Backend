@@ -87,7 +87,7 @@ def update_workout_folder(
     return updated_folder
 
 
-@workout_folder_router.delete("/{folder_id}", status_code=status.HTTP_200_OK)
+@workout_folder_router.delete("/{folder_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_workout_folder(
     folder_id: str,
     workout_folder_service: Annotated[
@@ -96,11 +96,8 @@ def delete_workout_folder(
     decoded_token: dict[str, str] = Depends(get_current_user),
 ):
     try:
-        is_success = workout_folder_service.delete_workout_folder(
-            folder_id, decoded_token["id"]
-        )
+        workout_folder_service.delete_workout_folder(folder_id, decoded_token["id"])
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except UnauthorizedAccessException as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
-    return {"detail": is_success}
