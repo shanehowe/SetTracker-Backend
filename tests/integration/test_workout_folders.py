@@ -1,14 +1,11 @@
 import pytest
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from fastapi.testclient import TestClient
 
 from app.data_access.workout_folder import WorkoutFolderDataAccess
 from app.models.exercises_models import ExerciseInDB
 from app.models.user_models import UserInDB
-from app.models.workout_folder_models import (
-    WorkoutFolderInDB,
-    WorkoutFolderInRequest,
-    WorkoutFolderInUpdate,
-)
+from app.models.workout_folder_models import WorkoutFolderInDB
 
 
 @pytest.fixture
@@ -45,7 +42,10 @@ def setup_module(
         workout_folder_data_access.create_workout_folder(folder)
     yield list_of_workout_folders
     for folder in list_of_workout_folders:
-        workout_folder_data_access.delete_workout_folder(folder.id)
+        try:
+            workout_folder_data_access.delete_workout_folder(folder.id)
+        except CosmosResourceNotFoundError:
+            pass  # Folder was already deleted
 
 
 def test_get_users_folders(logged_in_client: TestClient, user: UserInDB):
@@ -100,6 +100,7 @@ def test_create_workout_folder(
     logged_in_client: TestClient,
     user: UserInDB,
     workout_folder_data_access: WorkoutFolderDataAccess,
+    setup_module,
 ):
     """
     Test that the endpoint creates a workout folder
@@ -132,7 +133,7 @@ def test_create_workout_folder(
     ],
 )
 def test_create_folder_with_invalid_folder_name(
-    logged_in_client: TestClient, folder_name, message
+    logged_in_client: TestClient, folder_name, message, setup_module
 ):
     """
     Test that the endpoint returns 422 if the folder name is invalid
@@ -163,13 +164,19 @@ def test_update_workout_folder_name(logged_in_client: TestClient, user: UserInDB
     }
 
 
-def test_update_workout_folder_exercises(logged_in_client: TestClient, user: UserInDB):
+def test_update_workout_folder_exercises(
+    logged_in_client: TestClient, user: UserInDB, setup_module
+):
     """
     Test case for updating workout folder exercises.
     """
     exercises = [
-        ExerciseInDB(id="1", name="Exercise 1", user_id=user.id, body_parts=[], creator="system").model_dump(by_alias=True),
-        ExerciseInDB(id="2", name="Exercise 2", user_id=user.id, body_parts=[], creator="system").model_dump(by_alias=True)
+        ExerciseInDB(
+            id="1", name="Exercise 1", user_id=user.id, body_parts=[], creator="system"
+        ).model_dump(by_alias=True),
+        ExerciseInDB(
+            id="2", name="Exercise 2", user_id=user.id, body_parts=[], creator="system"
+        ).model_dump(by_alias=True),
     ]
 
     response = logged_in_client.put(
@@ -188,8 +195,12 @@ def test_update_workout_folder_name_and_exercises(
     Test case for updating the name and exercises of a workout folder.
     """
     exercises = [
-        ExerciseInDB(id="1", name="Exercise 1", user_id=user.id, body_parts=[], creator="system").model_dump(by_alias=True),
-        ExerciseInDB(id="2", name="Exercise 2", user_id=user.id, body_parts=[], creator="system").model_dump(by_alias=True)
+        ExerciseInDB(
+            id="1", name="Exercise 1", user_id=user.id, body_parts=[], creator="system"
+        ).model_dump(by_alias=True),
+        ExerciseInDB(
+            id="2", name="Exercise 2", user_id=user.id, body_parts=[], creator="system"
+        ).model_dump(by_alias=True),
     ]
 
     response = logged_in_client.put(
@@ -204,3 +215,74 @@ def test_update_workout_folder_name_and_exercises(
         "exercises": exercises,
         "userId": user.id,
     }
+
+
+def test_update_workout_folder_no_data(logged_in_client: TestClient, setup_module):
+    """
+    Test that the endpoint returns 422 if no data is provided
+    """
+    response = logged_in_client.put("/workout-folders/1", json={})
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "Folder name or exercises must be provided to update folder"
+    }
+
+
+def test_update_workout_folder_not_authorized(
+    logged_in_client: TestClient, setup_module
+):
+    """
+    Test that the endpoint returns 401 if the folder does not belong to the user
+    """
+    response = logged_in_client.put(
+        "/workout-folders/3",
+        json={"name": "Updated Folder", "exercises": []},
+    )
+    assert response.status_code == 401
+    assert response.json() == {"detail": "You do not have access to this folder"}
+
+
+def test_update_workout_folder_not_found(logged_in_client: TestClient):
+    """
+    Test that the endpoint returns 400 if the folder does not exist
+    """
+    response = logged_in_client.put(
+        "/workout-folders/100",
+        json={"name": "Updated Folder", "exercises": []},
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Folder with requested id does not exist"}
+
+
+def test_delete_workout_folder(
+    logged_in_client: TestClient,
+    workout_folder_data_access: WorkoutFolderDataAccess,
+    setup_module,
+):
+    """
+    Test that the endpoint deletes a workout folder
+    """
+    response = logged_in_client.delete("/workout-folders/1")
+    assert response.status_code == 204
+
+    # Check that the folder is deleted
+    with pytest.raises(CosmosResourceNotFoundError):
+        workout_folder_data_access.get_folder_by_id("1")
+
+
+def test_delete_workout_folder_not_found(logged_in_client: TestClient):
+    """
+    Test that the endpoint returns 400 if the folder does not exist
+    """
+    response = logged_in_client.delete("/workout-folders/100")
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Folder with requested id does not exist"}
+
+
+def test_delete_workout_folder_not_authorized(logged_in_client: TestClient):
+    """
+    Test that the endpoint returns 401 if the folder does not belong to the user
+    """
+    response = logged_in_client.delete("/workout-folders/3")
+    assert response.status_code == 401
+    assert response.json() == {"detail": "You do not have access to this folder"}
