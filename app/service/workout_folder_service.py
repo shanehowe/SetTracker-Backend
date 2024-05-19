@@ -105,7 +105,7 @@ class WorkoutFolderService:
             return None
 
         if retrieved_folder.user_id != user_id:
-            raise UnauthorizedAccessException("This folder does not belong to the user")
+            raise UnauthorizedAccessException("You do not have access to this folder")
 
         if data_to_update.name is not None:
             retrieved_folder.name = data_to_update.name
@@ -127,6 +127,7 @@ class WorkoutFolderService:
 
         Raises:
             ValueError: If the folder with the requested ID does not exist.
+            UnauthorizedAccessException: If the folder does not belong to the user.
         """
         folder_to_delete = self.get_folder_by_id(folder_id, user_id)
         if folder_to_delete is None:
