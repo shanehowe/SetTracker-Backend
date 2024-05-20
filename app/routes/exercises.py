@@ -7,7 +7,7 @@ from app.exceptions import EntityAlreadyExistsException
 from app.models.exercises_models import ExerciseInCreate
 from app.service.exercise_service import ExerciseService, get_exercise_service
 
-exercises_router = APIRouter(prefix="/exercises")
+exercises_router = APIRouter(prefix="/exercises", tags=["exercises"])
 
 
 @exercises_router.get("/")
