@@ -13,4 +13,3 @@ def test_decode_jwt():
     decoded = decode_jwt(token)
     assert decoded["user_id"] == payload["user_id"]
     assert "exp" in decoded
-

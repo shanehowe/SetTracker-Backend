@@ -14,7 +14,7 @@ user_router = APIRouter(prefix="/me", tags=["users"])
 def update_preferences(
     preferences: Preferences,
     user_service: Annotated[UserService, Depends(get_user_service)],
-    current_user: dict[str, str] = Depends(get_current_user)
+    current_user: dict[str, str] = Depends(get_current_user),
 ):
     try:
         user_service.update_user_preferences(preferences, current_user["id"])
