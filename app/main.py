@@ -22,6 +22,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     for error in exc.errors():
         if "msg" not in error or "loc" not in error:
             continue
+        elif len(error["loc"]) < 2:
+            continue
         location = error["loc"][1]
         # Remove the first word from the message. It will be replaced with the location.
         msg = " ".join(error["msg"].split()[1:]).replace(": ", " ")

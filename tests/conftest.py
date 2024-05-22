@@ -3,6 +3,7 @@ from azure.cosmos.exceptions import CosmosResourceNotFoundError
 from fastapi.testclient import TestClient
 
 from app.auth.passwords import get_password_hash
+from app.data_access.base import BaseDataAccess
 from app.data_access.user import UserDataAccess
 from app.data_access.workout_folder import WorkoutFolderDataAccess
 from app.main import fast_app
@@ -22,6 +23,11 @@ def user_data_access():
 @pytest.fixture
 def workout_folder_data_access():
     return WorkoutFolderDataAccess()
+
+
+@pytest.fixture
+def exercises_cosmos_client():
+    return BaseDataAccess("exercises").container
 
 
 @pytest.fixture
