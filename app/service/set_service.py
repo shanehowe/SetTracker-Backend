@@ -102,7 +102,7 @@ class SetService:
         """
         set_to_delete = self.get_set_by_id(set_id)
         if set_to_delete is None:
-            raise EntityNotFoundException(f"Set with ID: {set_id} does not exist")
+            raise EntityNotFoundException(f"Set with ID {set_id} does not exist")
         elif set_to_delete.user_id != user_id:
             raise UnauthorizedAccessException(
                 "Only the person who created this set can delete it"
